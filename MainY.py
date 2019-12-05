@@ -52,8 +52,8 @@ samplerv= BalancedBatchSampler(trainset,trainset_labels)
 trainloader = torch.utils.data.DataLoader(trainset,sampler = samplerv , batch_size= batch_sizev, num_workers=2)
 
 samplertest = BalancedBatchSampler(testset,testset_labels)
-test_batch_size = 100
-testloader = torch.utils.data.DataLoader(trainset,sampler = samplertest , batch_size= test_batch_size)
+test_batch_size = 300
+testloader = torch.utils.data.DataLoader(testset,sampler = samplertest , batch_size= test_batch_size)
 
 # %% Import Neural network
 
