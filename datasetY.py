@@ -1,0 +1,153 @@
+import csv
+import glob
+import math
+import os
+
+import torch
+from astropy.io import fits
+from six.moves import urllib
+
+
+def load_GG2_images2(images):
+    """
+    Normalizes images and upscales them
+    """
+
+
+    images = [fits.open(file, memmap=False)[0].data for file in images]
+    images = [torch.from_numpy(x.byteswap().newbyteorder()) for x in images]
+
+    #Normailze
+    normalize = [3.5239e+10, 1.5327e+09, 1.8903e+09, 1.2963e+09] #normalizations for 4 images
+    images = [x.mul(n) for x, n in zip(images, normalize)]
+
+
+    #Upscale 66*66 Images
+
+    othersv = torch.stack(images[1:])
+    upsample = torch.nn.Upsample(size=(200, 200), mode='bilinear', align_corners=True)
+    others_upsampled = torch.squeeze(upsample(othersv.unsqueeze(0)))
+    
+    return torch.cat((images[0].unsqueeze(0), others_upsampled),dim=0)
+
+def label_tansform_basic(labels):
+    return (int(labels['n_sources']))*2 -1
+
+def load_GG2_images(images):
+    """
+    Normalizes images and upscales them
+    """
+
+
+    images = [fits.open(file, memmap=False)[0].data for file in images]
+    images = [torch.from_numpy(x.byteswap().newbyteorder()) for x in images]
+
+    #Normailze
+    normalize = [3.5239e+10, 1.5327e+09, 1.8903e+09, 1.2963e+09] #normalizations for 4 images
+    images = [x.mul(n) for x, n in zip(images, normalize)]
+
+    return images[0].unsqueeze(0), torch.stack(images[1:])
+
+class GG2(torch.utils.data.Dataset):
+    url_train = 'http://metcalf1.difa.unibo.it/DATA3/datapack2.0train.tar.gz'
+    url_train_log = 'http://metcalf1.difa.unibo.it/DATA3/image_catalog2.0train.csv'
+
+
+    def __init__(self, root, transform=load_GG2_images2,target_transform =  label_tansform_basic):
+    #Upscale
+        """
+        Initializes the dataset with images and labels using the root path given.
+        The images are transformed using the transfomation given in the second argument.
+        """
+        self.root = os.path.expanduser(root)
+        self.files = None
+        self.data = None
+        #self.tar = None
+        self.download()
+        self.transform = transform
+        self.target_transform= target_transform
+
+    def __getitem__(self, index):
+        images = self.files[index]
+        #files = [self.tar.extractfile(self.tar.getmember(x)) for x in images]
+        
+        ID = int(images[0].split('-')[-1].split('.')[0])
+
+        if self.transform:
+            #files = self.transform(files)
+            images = self.transform(images)
+
+        labels = self.data[ID]
+        if self.target_transform:
+            labels = self.target_transform(labels)
+        
+
+        return images, labels 
+
+
+    def __len__(self):
+        return len(self.files)
+
+    def get_labels(self):
+        return torch.tensor( [self.data[i]['n_sources']*2.0-1.0 for i in self.data ])
+
+    def download(self):
+        if not os.path.isdir(self.root):
+            os.makedirs(self.root)
+
+        log_path = os.path.join(self.root, "train.csv")
+        if not os.path.isfile(log_path):
+            print("Download log...", flush=True)
+            data = urllib.request.urlopen(self.url_train_log)
+            with open(log_path, 'wb') as f:
+                f.write(data.read())
+
+        keys = [
+            '',              'ID',           'x_crit',            'y_crit',
+            'source_ID',     'z_source',     'z_lens',            'mag_source',
+            'ein_area',      'n_crit',       'r_source',          'crit_area',
+            'n_pix_source',  'source_flux',  'n_pix_lens',        'lens_flux',
+            'n_source_im',   'mag_eff',      'sb_contrast',       'color_diff',
+            'n_gal_3',       'n_gal_5',      'n_gal_10',          'halo_mass',
+            'star_mass',     'mag_lens',     'n_sources'
+        ]
+        assert len(keys) == 27
+        with open(log_path, 'rt') as csvfile:
+            reader = csv.reader(csvfile, delimiter=',')
+            data = [x for x in reader if len(x) == 27 and not 'ID' in x]
+            data = [{k: float(x) if x else math.nan for k, x in zip(keys, xs)} for xs in data]
+            self.data = {x['ID']: x for x in data}
+
+        gz_path = os.path.join(self.root, "datapack2.0train.tar.gz")
+        if not os.path.isfile(gz_path):
+            print("Download...", flush=True)
+            data = urllib.request.urlopen(self.url_train)
+            with open(gz_path, 'wb') as f:
+                f.write(data.read())
+
+        tar_path = os.path.join(self.root, "datapack2.0train.tar")
+        if not os.path.isfile(tar_path):
+            print("Decompress...", flush=True)
+            import gzip
+            import shutil
+            with gzip.open(gz_path, 'rb') as f_in:
+                with open(tar_path, 'wb') as f_out:
+                    shutil.copyfileobj(f_in, f_out)
+
+        dir_path = os.path.join(self.root, "datapack2.0train")
+        if not os.path.isdir(dir_path):
+            print("Extract...", flush=True)
+            import tarfile
+            tar = tarfile.open(tar_path)
+            tar.extractall(dir_path)
+            tar.close()
+        
+        # print("Open tar...", flush=True)
+        # import tarfile
+        # self.tar = tarfile.open(tar_path)
+
+        self.files = list(zip(*(
+            sorted(glob.glob(os.path.join(dir_path, "Public/{}/*.fits".format(band))))
+            for band in ("EUC_VIS", "EUC_J", "EUC_Y", "EUC_H")
+        )))
+        assert all(len({x.split('-')[-1] for x in fs}) == 1 for fs in self.files)
