@@ -1,9 +1,18 @@
 # %% Global parameters
+#Our variables:
+YoussefPathModel= '/home/youssef/EPFL/MA1/Machine learning/MLProject2/ML2/youssefe1.modeldict'
+Youssefdatapath = '/home/youssef/EPFL/MA1/Machine learning/MLProject2/Data'
+
+#Global variables:
 use_saved_model =1
 save_trained_model=1
-train_or_not =0
+train_or_not =1
 epochs =1
-PathModel= '/home/youssef/EPFL/MA1/Machine learning/MLProject2/ML2/youssef1.modeldict'
+PathModel= YoussefPathModel
+datapath = Youssefdatapath
+proportion_traindata = 0.01 # the proportion of the full dataset used for training
+
+
 
 # %% Import Dataset and create trainloader 
 import datasetY as dataset
@@ -15,10 +24,9 @@ import itertools
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 #importlib.reload(module)
-datapath = '/home/youssef/EPFL/MA1/Machine learning/MLProject2/Data'
+
 
 full_dataset = dataset.GG2(datapath)
-proportion_traindata = 0.01 # the proportion of the full dataset used for training
 
 train_size = int(proportion_traindata * len(full_dataset))
 test_size = len(full_dataset) - train_size
@@ -43,17 +51,18 @@ indices, sets = random_splitY(full_dataset, [train_size, test_size])
 [trainset, testset]=sets
 print(len(trainset))
 
+# Dataloaders
 batch_sizev=8 # 32>*>8
-trainset_labels = full_dataset.get_labels()[indices[:train_size]]
+test_batch_size = 300
+
+trainset_labels = full_dataset.get_labels()[indices[:train_size]] 
 testset_labels= full_dataset.get_labels()[indices[train_size:]] 
 
 samplerv= BalancedBatchSampler(trainset,trainset_labels)
+samplertest = BalancedBatchSampler(testset,testset_labels)
 
 trainloader = torch.utils.data.DataLoader(trainset,sampler = samplerv , batch_size= batch_sizev, num_workers=2)
-
-samplertest = BalancedBatchSampler(testset,testset_labels)
-test_batch_size = 300
-testloader = torch.utils.data.DataLoader(testset,sampler = samplertest , batch_size= test_batch_size)
+testloader = torch.utils.data.DataLoader(testset,sampler = samplertest , batch_size= test_batch_size, num_workers=2)
 
 # %% Import Neural network
 
@@ -76,11 +85,23 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 momentumv=0.90
-lrv=0.0001
+lrv=0.01
 
 
-# To calculate accuracy
-def test_accuracy():
+# To calculate accuracy]
+def test_accuracy(net):
+    correct = 0
+    total = 0
+    with torch.no_grad():
+        for data in testloader:
+            images, labels = data
+            predicted = net(images)
+            #_, predicted = torch.max(outputs.data, 1)
+            total += labels.size(0)
+            correct += (predicted == labels).sum().item()
+    return correct/total
+
+def train_accuracy(net):
     correct = 0
     total = 0
     with torch.no_grad():
@@ -93,28 +114,29 @@ def test_accuracy():
     return correct/total
 
 criterion = nn.SoftMarginLoss()
-optimizer = optim.SGD(list(net.conv_stem.parameters()) + list(net.classifier.parameters()), lr=lrv, momentum=momentumv)
+optimizer = optim.SGD(net.parameters(), lr=lrv, momentum=momentumv)
 
 net.train()
 
 #Option to use a saved model parameters
 if use_saved_model:
-    #PathModel = '/home/youssef/EPFL/MA1/Machine learning/MLProject2/ML2/youssef1.modeldict'
     import os
-    if os.stat(PathModel).st_size > 0:
-        net.load_state_dict(torch.load(PathModel))
-    else: 
-        print("Empty file")
+    if os.path.isfile(PathModel):
+        if os.stat(PathModel).st_size > 0:
+            net.load_state_dict(torch.load(PathModel))
+            print("Loading model...")
+        else: 
+            print("Empty file...")
 
 #Training starts
 if train_or_not:
+    print("Starting training...")
     for epoch in range(epochs):  # loop over the dataset multiple times
-
         running_loss = 0.0
         test_accuracy = 0.0 
         for i, data in enumerate(trainloader, 0):
             # get the inputs; data is a list of [inputs, labels]
-            inputs, labels = data
+            inputs, labels = data[0].to(device), data[1].to(device)
             labels = torch.unsqueeze(labels, dim =1)
             labels = labels.float()
             
@@ -122,7 +144,6 @@ if train_or_not:
             optimizer.zero_grad()
 
             # forward + backward + optimize
-            inputs = inputs
             outputs = net(inputs)
             loss = criterion(outputs, labels)
             loss.backward()
@@ -131,20 +152,27 @@ if train_or_not:
             # print statistics
             running_loss += loss.item()
             if i % 5 == 4:    # print every 5 mini-batches
-                print('[%5d] loss: %.6f, test accuracy: %.3f ' %
-                        (i + 1, running_loss/5.0 , test_accuracy))
+                print('[%5d, %5d] loss: %.6f, test accuracy: %.3f ' %
+                        (epoch+1, i + 1, running_loss/5.0 , test_accuracy))
                 running_loss = 0.0
 
     print('Finished Training')
     if save_trained_model:
-        #PathModel = '/home/youssef/EPFL/MA1/Machine learning/MLProject2/ML2/youssef1.modeldict'
+        if os.path.exists(PathModel):  # checking if there is a file with this name
+            os.remove(PathModel)  # deleting the file
         torch.save(net.state_dict(), PathModel)
+        print("Saving model...")
+
+if torch.cuda.is_available() : #ie if on the server
+    import sys
+    sys.exit()
 
 # %% Metrics
 
 # Testing mode for net
 net.eval()
 
+#print("Train accuracy: %5d"%train_accuracy(net))
 
 from sklearn import metrics
 
@@ -155,6 +183,9 @@ testset_partial= iter(testloader).next()
 testset_partial_I , testset_partial_labels = testset_partial[0], testset_partial[1] 
 # predictions_and_labels = [[net(testset_partial[i][0][None]),testset_partial[i][1]]  in range(valdation1_size)]
 predictions = [net(image[None]).item() for image in testset_partial_I ]
+
+# Soft= torch.nn.Softmax()
+# predictionsSoft= Soft(predictions,-1*predictions)
 
 fpr, tpr, thresholds = metrics.roc_curve(testset_partial_labels, predictions)
 
@@ -169,7 +200,8 @@ y = tpr
 
 # plotting the points  
 
-plt.scatter(x, y,marker='x') 
+plt.plot(x, y,marker='x') 
+plt.plot(x, x,marker='x')
   
 # naming the x axis 
 plt.xlabel('False Positive Rate') 
@@ -185,6 +217,7 @@ plt.show()
 # Commands for server: 
 # grun *.py
 # -t tmux a
+# nvidia smi
 
 # %% Optimisation of hyperparameters
 
