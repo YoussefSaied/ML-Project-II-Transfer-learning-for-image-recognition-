@@ -112,7 +112,7 @@ def train_accuracy(net):
     total = 0
     with torch.no_grad():
         for data in trainloader:
-            images, labels = data
+            images, labels = data.to(device)
             predicted = net(images)
             #_, predicted = torch.max(outputs.data, 1)
             total += labels.size(0)
@@ -129,7 +129,7 @@ if use_saved_model:
     import os
     if os.path.isfile(PathModel):
         if os.stat(PathModel).st_size > 0:
-            net.load_state_dict(torch.load(PathModel,map_location=torch.device(device)))
+            net.load_state_dict(torch.load(PathModel,map_location=torch.device(device   )))
             print("Loading model...")
         else: 
             print("Empty file...")
