@@ -2,14 +2,17 @@
 #Our variables:
 YoussefPathModel= '/home/youssef/EPFL/MA1/Machine learning/MLProject2/ML2/youssefserver.modeldict'
 Youssefdatapath = '/home/youssef/EPFL/MA1/Machine learning/MLProject2/Data'
+YoussefServerPathModel= '/home/saied/ML/ML2/youssefe1.modeldict'
+YoussefServerdatapath = '/data/mgeiger/gg2/data'
+
 
 #Global variables:
 use_saved_model =1
 save_trained_model=0
 train_or_not =0
 epochs =1
-PathModel= YoussefPathModel
-datapath = Youssefdatapath
+PathModel= YoussefServerPathModel
+datapath = YoussefServerdatapath
 proportion_traindata = 0.8 # the proportion of the full dataset used for training
 
 
@@ -91,15 +94,17 @@ lrv=0.01
 
 # To calculate accuracy]
 def test_accuracy(net):
-    correct = 0
-    total = 0
+    correct = 0.0
+    total = 0.0
     with torch.no_grad():
-        for data in testloader:
-            images, labels = data
-            predicted = net(images)
-            #_, predicted = torch.max(outputs.data, 1)
-            total += labels.size(0)
-            correct += (predicted == labels).sum().item()
+        data =iter(testloader).next()
+        images, labels = data
+        predicted = net(images)
+        predicted = (torch.nn.functional.sigmoid(predicted)*2 -1).numpy()
+        predicted[predicted<0]=-1
+        predicted[predicted>0]=1
+        total += labels.size(0)
+        correct += (predicted == labels).sum().item()
     return correct/total
 
 def train_accuracy(net):
@@ -165,6 +170,9 @@ if train_or_not:
         print("Saving model...")
 
 if torch.cuda.is_available() : #ie if on the server
+    net.eval()
+    training_accuracy = train_accuracy(net)
+    print("Train accuracy: %5d"%train_accuracy)
     import sys
     sys.exit()
 
@@ -173,20 +181,16 @@ if torch.cuda.is_available() : #ie if on the server
 # Testing mode for net
 net.eval()
 
-#print("Train accuracy: %5d"%train_accuracy(net))
+training_accuracy = train_accuracy(net)
+print("Train accuracy: %5d"%train_accuracy)
 
 from sklearn import metrics
 
-valdation1_size= test_batch_size
-
-#testset_labels_partial= testset_labels[:valdation1_size] 
+# ROC curve calculation
 testset_partial= iter(testloader).next()
 testset_partial_I , testset_partial_labels = testset_partial[0], testset_partial[1] 
-# predictions_and_labels = [[net(testset_partial[i][0][None]),testset_partial[i][1]]  in range(valdation1_size)]
 predictions = [net(image[None]).item() for image in testset_partial_I ]
 
-# Soft= torch.nn.Softmax()
-# predictionsSoft= Soft(predictions,-1*predictions)
 
 fpr, tpr, thresholds = metrics.roc_curve(testset_partial_labels, predictions)
 

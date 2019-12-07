@@ -66,7 +66,22 @@ class BalancedBatchSampler2(torch.utils.data.sampler.Sampler):
         self.n = max(len(ids) for ids in self.indices) * len(self.indices)
 
         dataset.transform = transform
-        
+
+    # def __init__(self, dataset):
+    #     transform = dataset.dataset.transform
+    #     dataset.dataset.transform = None # trick to avoid useless computations
+
+    #     indices = defaultdict(list)
+    #     for i in list(dataset.indices):
+    #         _, label = dataset.dataset[i]
+    #         indices[label].append(i)           
+    #     self.indices = list(indices.values())
+
+    #     self.n = max(len(ids) for ids in self.indices) * len(self.indices)
+
+    #     dataset.dataset.transform=transform
+
+
     def __iter__(self):
         m = 0
         for xs in zip(*(inf_shuffle(xs) for xs in self.indices)):
