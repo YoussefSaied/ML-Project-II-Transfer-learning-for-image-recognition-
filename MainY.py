@@ -25,7 +25,6 @@ from sampler import BalancedBatchSampler
 #from sampler import BalancedBatchSampler2
 import itertools
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-
 #importlib.reload(module)
 
 
@@ -165,14 +164,10 @@ fpr, tpr, thresholds = metrics.roc_curve(testset_partial_labels, predictions)
 # importing the required module 
 import matplotlib.pyplot as plt 
   
-# x axis values 
-x = fpr
-# corresponding y axis values 
-y = tpr 
-  
+# x axis and y axis values 
+x ,y = fpr, tpr
 
 # plotting the points  
-
 plt.plot(x, y,marker='x') 
 plt.plot(x, x,marker='x')
   
@@ -182,7 +177,7 @@ plt.xlabel('False Positive Rate')
 plt.ylabel('True Positive Rate') 
   
 # giving a title to my graph 
-plt.title('Reciever operating characteristic example') 
+plt.title('Reciever operating characteristic curve') 
   
 # function to show the plot 
 plt.show()
