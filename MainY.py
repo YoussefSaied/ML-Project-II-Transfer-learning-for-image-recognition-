@@ -2,7 +2,7 @@
 #Our variables:
 YoussefPathModel= '/home/youssef/EPFL/MA1/Machine learning/MLProject2/ML2/youssefserver.modeldict'
 Youssefdatapath = '/home/youssef/EPFL/MA1/Machine learning/MLProject2/Data'
-YoussefServerPathModel= '/home/saied/ML/ML2/youssefe1.modeldict'
+YoussefServerPathModel= '/home/saied/ML/ML2/youssefServer2.modeldict'
 YoussefServerdatapath = '/data/mgeiger/gg2/data'
 
 
@@ -112,7 +112,7 @@ def train_accuracy(net):
     total = 0
     with torch.no_grad():
         for data in trainloader:
-            images, labels = data.to(device)
+            images, labels = data[0].to(device), data[1].to(device)
             predicted = net(images)
             #_, predicted = torch.max(outputs.data, 1)
             total += labels.size(0)
