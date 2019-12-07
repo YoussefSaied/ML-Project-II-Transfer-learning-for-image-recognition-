@@ -1,16 +1,16 @@
 # %% Global parameters
 #Our variables:
-YoussefPathModel= '/home/youssef/EPFL/MA1/Machine learning/MLProject2/ML2/youssefe1.modeldict'
+YoussefPathModel= '/home/youssef/EPFL/MA1/Machine learning/MLProject2/ML2/youssefserver.modeldict'
 Youssefdatapath = '/home/youssef/EPFL/MA1/Machine learning/MLProject2/Data'
 
 #Global variables:
 use_saved_model =1
-save_trained_model=1
-train_or_not =1
+save_trained_model=0
+train_or_not =0
 epochs =1
 PathModel= YoussefPathModel
 datapath = Youssefdatapath
-proportion_traindata = 0.01 # the proportion of the full dataset used for training
+proportion_traindata = 0.8 # the proportion of the full dataset used for training
 
 
 
@@ -75,7 +75,8 @@ net.conv_stem = torch.nn.Conv2d(4, 32, kernel_size=(3, 3), stride=(2, 2),
 net.classifier = torch.nn.Linear(1280, 1)
 net.to(device)
 
-print(net)
+if not torch.cuda.is_available() : #ie if NOT on the server
+    print(net)
 
 
 # %% Train Neural network
@@ -123,7 +124,7 @@ if use_saved_model:
     import os
     if os.path.isfile(PathModel):
         if os.stat(PathModel).st_size > 0:
-            net.load_state_dict(torch.load(PathModel))
+            net.load_state_dict(torch.load(PathModel,map_location=torch.device('cpu')))
             print("Loading model...")
         else: 
             print("Empty file...")
@@ -151,9 +152,9 @@ if train_or_not:
 
             # print statistics
             running_loss += loss.item()
-            if i % 5 == 4:    # print every 5 mini-batches
+            if i % 2000 == 1999:    # print every 5 mini-batches
                 print('[%5d, %5d] loss: %.6f, test accuracy: %.3f ' %
-                        (epoch+1, i + 1, running_loss/5.0 , test_accuracy))
+                        (epoch+1, i + 1, running_loss/2000 , test_accuracy))
                 running_loss = 0.0
 
     print('Finished Training')
