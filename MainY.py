@@ -129,7 +129,7 @@ if use_saved_model:
     import os
     if os.path.isfile(PathModel):
         if os.stat(PathModel).st_size > 0:
-            net.load_state_dict(torch.load(PathModel,map_location=torch.device('cpu')))
+            net.load_state_dict(torch.load(PathModel,map_location=torch.device(device)))
             print("Loading model...")
         else: 
             print("Empty file...")
