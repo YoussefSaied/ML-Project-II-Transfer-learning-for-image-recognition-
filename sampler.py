@@ -6,6 +6,7 @@ except:
     is_torchvision_installed = False
 import torch.utils.data
 import random
+import itertools
 
 class BalancedBatchSampler(torch.utils.data.sampler.Sampler):
     def __init__(self, dataset, labels=None):
@@ -53,33 +54,28 @@ class BalancedBatchSampler(torch.utils.data.sampler.Sampler):
         return self.balanced_max*len(self.keys)
 
 class BalancedBatchSampler2(torch.utils.data.sampler.Sampler):
+
     def __init__(self, dataset):
-        transform = dataset.transform
-        dataset.transform = None  # trick to avoid useless computations
+        from collections import defaultdict
+        if hasattr(dataset, 'dataset'):
+            transform = dataset.dataset.transform
+            dataset.dataset.transform = None # trick to avoid useless computations
+            indices = defaultdict(list)
+            for subset_index, full_data_index in enumerate(dataset.indices):
+                _, label = dataset.dataset[full_data_index]
+                indices[label].append(subset_index) 
+            dataset.dataset.transform = transform
+        else:
+            transform = dataset.transform
+            dataset.transform = None  # trick to avoid useless computations
+            indices = defaultdict(list)
+            for i in range(0, len(dataset)):
+                _, label = dataset[i]
+                indices[label].append(i)
+            dataset.transform = transform     
 
-        indices = defaultdict(list)
-        for i in range(0, len(dataset)):
-            _, label = dataset[i]
-            indices[label].append(i)            
         self.indices = list(indices.values())
-        
         self.n = max(len(ids) for ids in self.indices) * len(self.indices)
-
-        dataset.transform = transform
-
-    # def __init__(self, dataset):
-    #     transform = dataset.dataset.transform
-    #     dataset.dataset.transform = None # trick to avoid useless computations
-
-    #     indices = defaultdict(list)
-    #     for i in list(dataset.indices):
-    #         _, label = dataset.dataset[i]
-    #         indices[label].append(i)           
-    #     self.indices = list(indices.values())
-
-    #     self.n = max(len(ids) for ids in self.indices) * len(self.indices)
-
-    #     dataset.dataset.transform=transform
 
 
     def __iter__(self):

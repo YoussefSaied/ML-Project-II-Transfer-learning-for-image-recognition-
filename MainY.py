@@ -12,17 +12,15 @@ save_trained_model=0
 train_or_not =0
 epochs =1
 PathModel= YoussefServerPathModel
-datapath = YoussefServerdatapath
+datapath = Youssefdatapath
 proportion_traindata = 0.8 # the proportion of the full dataset used for training
-
 
 
 # %% Import Dataset and create trainloader 
 import datasetY as dataset
 import torch
 import importlib
-from sampler import BalancedBatchSampler
-#from sampler import BalancedBatchSampler2
+from sampler import *
 import itertools
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 #importlib.reload(module)
@@ -46,8 +44,8 @@ test_batch_size = 300
 trainset_labels = full_dataset.get_labels()[indices[:train_size]] 
 testset_labels= full_dataset.get_labels()[indices[train_size:]] 
 
-samplerv= BalancedBatchSampler(trainset,trainset_labels)
-samplertest = BalancedBatchSampler(testset,testset_labels)
+samplerv= BalancedBatchSampler2(trainset)
+samplertest = BalancedBatchSampler2(testset)
 
 trainloader = torch.utils.data.DataLoader(trainset,sampler = samplerv , batch_size= batch_sizev, num_workers=2)
 testloader = torch.utils.data.DataLoader(testset,sampler = samplertest , batch_size= test_batch_size, num_workers=2)
@@ -78,6 +76,8 @@ lrv=0.01
 
 
 # To calculate accuracy
+from sampler import accuracy
+
 def train_accuracy(net):
     return accuracy(net, loader= trainloader)
 
