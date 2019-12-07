@@ -35,20 +35,6 @@ train_size = int(proportion_traindata * len(full_dataset))
 test_size = len(full_dataset) - train_size
 
 # To split the full_dataset
-def random_splitY(dataset, lengths):
-    r"""
-    Randomly split a dataset into non-overlapping new datasets of given lengths.
-
-    Arguments:
-        dataset (Dataset): Dataset to be split
-        lengths (sequence): lengths of splits to be produced
-    """
-    if sum(lengths) != len(dataset):
-        raise ValueError("Sum of input lengths does not equal the length of the input dataset!")
-
-    indices = torch.randperm(sum(lengths)).tolist()
-    return indices, [torch.utils.data.Subset(dataset, indices[offset - length:offset]) for offset, length in
-     zip(itertools.accumulate(lengths), lengths)]
 
 indices, sets = random_splitY(full_dataset, [train_size, test_size])
 [trainset, testset]=sets
@@ -92,37 +78,13 @@ momentumv=0.90
 lrv=0.01
 
 
-# To calculate accuracy]
-def test_accuracy(net):
-    correct = 0.0
-    total = 0.0
-    with torch.no_grad():
-        data =iter(testloader).next()
-        images, labels = data
-        predicted = net(images)
-        predicted = (torch.nn.functional.sigmoid(predicted)*2 -1).numpy()
-        predicted[predicted<0]=-1
-        predicted[predicted>0]=1
-        total += labels.size(0)
-        correct += (predicted == labels).sum().item()
-    return correct/total
-
+# To calculate accuracy
 def train_accuracy(net):
-    correct = 0
-    total = 0
-    with torch.no_grad():
-        for data in trainloader:
-            images, labels = data[0].to(device), data[1].to(device)
-            predicted = net(images)
-            #_, predicted = torch.max(outputs.data, 1)
-            total += labels.size(0)
-            correct += (predicted == labels).sum().item()
-    return correct/total
+    return accuracy(net, loader= trainloader)
 
-criterion = nn.SoftMarginLoss()
-optimizer = optim.SGD(net.parameters(), lr=lrv, momentum=momentumv)
+def test_accuracy(net):
+    return accuracy(net, loader= testloader)
 
-net.train()
 
 #Option to use a saved model parameters
 if use_saved_model:
@@ -135,6 +97,12 @@ if use_saved_model:
             print("Empty file...")
 
 #Training starts
+
+criterion = nn.SoftMarginLoss()
+optimizer = optim.SGD(net.parameters(), lr=lrv, momentum=momentumv)
+
+net.train()
+
 if train_or_not:
     print("Starting training...")
     for epoch in range(epochs):  # loop over the dataset multiple times
@@ -171,8 +139,8 @@ if train_or_not:
 
 if torch.cuda.is_available() : #ie if on the server
     net.eval()
-    training_accuracy = train_accuracy(net)
-    print("Train accuracy: %5d"%train_accuracy)
+    test_accuracyv = test_accuracy(net)
+    print("Test accuracy: %5d"%test_accuracyv)
     import sys
     sys.exit()
 
@@ -181,8 +149,8 @@ if torch.cuda.is_available() : #ie if on the server
 # Testing mode for net
 net.eval()
 
-training_accuracy = train_accuracy(net)
-print("Train accuracy: %5d"%train_accuracy)
+train_accuracyv = train_accuracy(net)
+print("Train accuracy: %5f"%train_accuracyv)
 
 from sklearn import metrics
 

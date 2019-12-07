@@ -93,3 +93,33 @@ class BalancedBatchSampler2(torch.utils.data.sampler.Sampler):
 
     def __len__(self):
         return self.n
+
+def random_splitY(dataset, lengths):
+    r"""
+    Randomly split a dataset into non-overlapping new datasets of given lengths.
+
+    Arguments:
+        dataset (Dataset): Dataset to be split
+        lengths (sequence): lengths of splits to be produced
+    """
+    if sum(lengths) != len(dataset):
+        raise ValueError("Sum of input lengths does not equal the length of the input dataset!")
+
+    indices = torch.randperm(sum(lengths)).tolist()
+    return indices, [torch.utils.data.Subset(dataset, indices[offset - length:offset]) for offset, length in
+     zip(itertools.accumulate(lengths), lengths)]
+
+
+def accuracy(net, loader):
+    correct = 0.0
+    total = 0.0
+    with torch.no_grad():
+        data =iter(loader).next()
+        images, labels = data[0].to(device), data[1].to(device)
+        predicted = net(images)
+        predicted = (torch.nn.functional.sigmoid(predicted)*2 -1).numpy()
+        predicted[predicted<0]=-1
+        predicted[predicted>0]=1
+        total += labels.size(0)
+        correct += (predicted.squeeze() == labels.numpy().squeeze()).astype(int).sum()
+    return correct/total
