@@ -139,7 +139,7 @@ if train_or_not:
 if torch.cuda.is_available() : #ie if on the server
     net.eval()
     test_accuracyv = test_accuracy(net)
-    print("Test accuracy: %5d"%test_accuracyv)
+    print("Test accuracy: %5f"%test_accuracyv)
     import sys
     sys.exit()
 
@@ -149,7 +149,7 @@ if torch.cuda.is_available() : #ie if on the server
 net.eval()
 
 test_accuracyv = test_accuracy(net)
-print("Test accuracy: %5d"%test_accuracyv)
+print("Test accuracy: %5f"%test_accuracyv)
 
 from sklearn import metrics
 

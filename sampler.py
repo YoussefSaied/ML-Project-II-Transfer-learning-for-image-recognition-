@@ -120,14 +120,11 @@ def accuracy(net, loader,device):
         data =iter(loader).next()
         images, labels = data[0].to(device), data[1].to(device)
         predicted = net(images)
-        print(predicted)
+        print(predicted.squeeze())
         predicted = (torch.sigmoid(predicted)*2 -1).numpy()
         predicted[predicted<0]=-1.0
         predicted[predicted>0]=1.0
-        
-        print(predicted.astype(int).squeeze())
-        print(labels.numpy().squeeze())
         total += labels.size(0)
         print((predicted.astype(int).squeeze() == labels.numpy().squeeze()).astype(int))
         correct += (predicted.astype(int).squeeze() == labels.numpy().squeeze()).astype(int).sum()
-    return float(correct)/total
+    return correct/total
