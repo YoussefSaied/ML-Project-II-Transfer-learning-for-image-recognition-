@@ -8,6 +8,13 @@ import torch.utils.data
 import random
 import itertools
 
+
+def inf_shuffle(xs):
+    while xs:
+        random.shuffle(xs)
+        for x in xs:
+            yield x
+
 class BalancedBatchSampler(torch.utils.data.sampler.Sampler):
     def __init__(self, dataset, labels=None):
         self.labels = labels

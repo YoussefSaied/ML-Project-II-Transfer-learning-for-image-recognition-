@@ -2,7 +2,7 @@
 #Our variables:
 YoussefPathModel= '/home/youssef/EPFL/MA1/Machine learning/MLProject2/ML2/youssefserver.modeldict'
 Youssefdatapath = '/home/youssef/EPFL/MA1/Machine learning/MLProject2/Data'
-YoussefServerPathModel= '/home/saied/ML/ML2/youssefServer2.modeldict'
+YoussefServerPathModel= '/home/saied/ML/ML2/youssefServer3.modeldict'
 YoussefServerdatapath = '/data/mgeiger/gg2/data'
 
 
@@ -12,13 +12,13 @@ save_trained_model=0
 train_or_not =0
 epochs =1
 PathModel= YoussefServerPathModel
-datapath = Youssefdatapath
+datapath = YoussefServerdatapath
 proportion_traindata = 0.8 # the proportion of the full dataset used for training
 
 
 # %% Import Dataset and create trainloader 
 import datasetY as dataset
-import torch
+import torchiter(testloader).next()
 import importlib
 from sampler import *
 import itertools
