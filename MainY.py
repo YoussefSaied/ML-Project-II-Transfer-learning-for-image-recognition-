@@ -11,8 +11,8 @@ use_saved_model =1
 save_trained_model=0
 train_or_not =0
 epochs =1
-PathModel= YoussefServerPathModel
-datapath = YoussefServerdatapath
+PathModel= YoussefPathModel
+datapath = Youssefdatapath
 proportion_traindata = 0.8 # the proportion of the full dataset used for training
 
 
@@ -79,10 +79,10 @@ lrv=0.01
 from sampler import accuracy
 
 def train_accuracy(net):
-    return accuracy(net, loader= trainloader)
+    return accuracy(net, loader= trainloader,device=device)
 
 def test_accuracy(net):
-    return accuracy(net, loader= testloader)
+    return accuracy(net, loader= testloader,device=device)
 
 
 #Option to use a saved model parameters
