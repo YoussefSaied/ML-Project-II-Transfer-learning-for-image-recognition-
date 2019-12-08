@@ -18,7 +18,7 @@ proportion_traindata = 0.8 # the proportion of the full dataset used for trainin
 
 # %% Import Dataset and create trainloader 
 import datasetY as dataset
-import torchiter(testloader).next()
+import torch
 import importlib
 from sampler import *
 import itertools
