@@ -130,4 +130,4 @@ def accuracy(net, loader,device):
         total += labels.size(0)
         print((predicted.astype(int).squeeze() == labels.numpy().squeeze()).astype(int))
         correct += (predicted.astype(int).squeeze() == labels.numpy().squeeze()).astype(int).sum()
-    return correct/total
+    return float(correct)/total
