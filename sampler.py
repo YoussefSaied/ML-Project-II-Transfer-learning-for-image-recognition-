@@ -125,8 +125,9 @@ def accuracy(net, loader,device):
         predicted[predicted<0]=-1.0
         predicted[predicted>0]=1.0
         
-        print(predicted.squeeze())
+        print(predicted.astype(int).squeeze())
         print(labels.numpy().squeeze())
         total += labels.size(0)
+        print((predicted.astype(int).squeeze() == labels.numpy().squeeze()).astype(int))
         correct += (predicted.astype(int).squeeze() == labels.numpy().squeeze()).astype(int).sum()
     return correct/total
