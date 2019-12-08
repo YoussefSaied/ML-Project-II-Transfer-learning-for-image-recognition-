@@ -148,8 +148,8 @@ if torch.cuda.is_available() : #ie if on the server
 # Testing mode for net
 net.eval()
 
-train_accuracyv = train_accuracy(net)
-print("Train accuracy: %5f"%train_accuracyv)
+test_accuracyv = test_accuracy(net)
+print("Test accuracy: %5d"%test_accuracyv)
 
 from sklearn import metrics
 
