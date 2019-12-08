@@ -8,9 +8,9 @@ YoussefServerdatapath = '/data/mgeiger/gg2/data'
 
 #Global variables:
 use_saved_model =1
-save_trained_model=0
-train_or_not =0
-epochs =1
+save_trained_model=1
+train_or_not =1
+epochs =10
 PathModel= YoussefServerPathModel
 datapath = YoussefServerdatapath
 proportion_traindata = 0.8 # the proportion of the full dataset used for training
