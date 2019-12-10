@@ -10,11 +10,11 @@ YoussefServerPicklingPath = '/home/saied/ML/ML2/'
 use_saved_model =1
 save_trained_model=1
 train_or_not =1
-epochs =2
+epochs =20
 PicklingPath=YoussefServerPicklingPath
 PathModel= YoussefServerPathModel
 datapath = YoussefServerdatapath
-proportion_traindata = 0.01 # the proportion of the full dataset used for training
+proportion_traindata = 0.8 # the proportion of the full dataset used for training
 
 # %% Import Dataset and create trainloader 
 import datasetY as dataset
@@ -110,7 +110,7 @@ if train_or_not:
     train_accuracy_list = np.array([0])
     test_accuracy_list = []
     for epoch in range(epochs):  # loop over the dataset multiple times
-        print("Starting epoch %d"%epoch)
+        print("Starting epoch %d"%(epoch+1))
         running_loss = 0.0
         for i, data in enumerate(trainloader, 0):
             # get the inputs; data is a list of [inputs, labels]
@@ -139,7 +139,7 @@ if train_or_not:
         predictions = []
         labels = []
         for k, testset_partial in enumerate(testloader):
-            if k <3:
+            if k <100000:
                 testset_partial_I , testset_partial_labels = testset_partial[0].to(device), testset_partial[1].to(device)
                 predictions += [net(image[None]).item() for image in testset_partial_I ]
                 labels += testset_partial_labels.tolist()
@@ -158,11 +158,20 @@ if train_or_not:
         net.eval()
         test_accuracyv = test_accuracy(net)
         print("Test accuracy: %5f"%test_accuracyv)
-        if test_accuracyv< np.min(train_accuracy_list):
+        if test_accuracyv< np.min(train_accuracy_list) and False:
             break
         train_accuracy_list = np.concatenate((train_accuracy_list, np.array([test_accuracyv])))
         net.train()
-
+        
+    print("Pickling accuracies...")
+    file_name= PicklingPath+"accuracies"
+    if os.path.exists(file_name):  # checking if there is a file with this name
+        os.remove(file_name)  # deleting the file
+    import pickle
+    with open(file_name, 'wb') as pickle_file:
+        pickle.dump(train_accuracy_list,pickle_file)
+        pickle_file.close()
+    
     print('Finished Training')
     if save_trained_model:
         if os.path.exists(PathModel):  # checking if there is a file with this name
