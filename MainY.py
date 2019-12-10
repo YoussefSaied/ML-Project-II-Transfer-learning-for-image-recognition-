@@ -141,7 +141,7 @@ if train_or_not:
             if k <3:
                 testset_partial_I , testset_partial_labels = testset_partial[0].to(device), testset_partial[1].to(device)
                 predictions += [net(image[None]).item() for image in testset_partial_I ]
-                labels += testset_partial_labels.toList()
+                labels += testset_partial_labels.tolist()
         file_name= PicklingPath+"PredictionsAndLabelsTrial1Epoch"+str(i)
         if os.path.exists(file_name):  # checking if there is a file with this name
             os.remove(file_name)  # deleting the file
