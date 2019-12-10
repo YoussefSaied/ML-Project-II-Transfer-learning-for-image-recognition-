@@ -31,7 +31,7 @@ def load_GG2_images2(images):
     return torch.cat((images[0].unsqueeze(0), others_upsampled),dim=0)
 
 def label_tansform_basic(labels):
-    return (int(labels['n_sources']))*2 -1
+    return (int(labels['n_sources']))*2.0 -1.0
 
 def load_GG2_images(images):
     """

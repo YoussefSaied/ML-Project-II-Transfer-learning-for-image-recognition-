@@ -5,15 +5,16 @@ Youssefdatapath = '/home/youssef/EPFL/MA1/Machine learning/MLProject2/Data'
 YoussefServerPathModel= '/home/saied/ML/ML2/youssefServer4.modeldict'
 YoussefServerdatapath = '/data/mgeiger/gg2/data'
 YoussefServerPicklingPath = '/home/saied/ML/ML2/'
+YoussefPicklingPath = '/home/youssef/EPFL/MA1/Machine learning/MLProject2/ML2/Predictions/'
 
 #Global variables:
 use_saved_model =1
 save_trained_model=0
 train_or_not =0
 epochs =20
-PicklingPath=YoussefServerPicklingPath
-PathModel= YoussefServerPathModel
-datapath = YoussefServerdatapath
+PicklingPath=YoussefPicklingPath
+PathModel= YoussefPathModel
+datapath = Youssefdatapath
 proportion_traindata = 0.99 # the proportion of the full dataset used for training
 
 # %% Import Dataset and create trainloader 
@@ -42,7 +43,7 @@ print(len(trainset))
 
 # Dataloaders
 batch_sizev=8 # 32>*>8
-test_batch_size = 2000
+test_batch_size = 20
 
 trainset_labels = full_dataset.get_labels()[indices[:train_size]] 
 testset_labels= full_dataset.get_labels()[indices[train_size:]] 
@@ -52,7 +53,7 @@ samplertest = BalancedBatchSampler2(testset)
 
 trainloader = torch.utils.data.DataLoader(trainset,sampler = samplerv , batch_size= batch_sizev, num_workers=2)
 testloader = torch.utils.data.DataLoader(testset,sampler = samplertest , batch_size= test_batch_size, num_workers=2)
-
+ROCloader = torch.utils.data.DataLoader(testset)
 # %% Import Neural network
 
 net = torch.hub.load('rwightman/gen-efficientnet-pytorch', 'efficientnet_b0',
@@ -87,6 +88,9 @@ def train_accuracy(net):
 def test_accuracy(net):
     return accuracy(net, loader= testloader,device=device)
 
+def ROC_accuracy(net):
+    return accuracy(net, loader= ROCloader,device=device)
+
 
 #Option to use a saved model parameters
 if use_saved_model:
@@ -97,6 +101,7 @@ if use_saved_model:
             print("Loading model...")
         else: 
             print("Empty file...")
+        print("Using saved model...")
 
 #Training starts
 
@@ -192,18 +197,31 @@ if torch.cuda.is_available() : #ie if on the server
 
 # Testing mode for net
 net.eval()
+if True:
+    test_accuracyv = test_accuracy(net)
+    print("Test accuracy: %5f"%test_accuracyv)
 
-test_accuracyv = test_accuracy(net)
-print("Test accuracy: %5f"%test_accuracyv)
 from sklearn import metrics
 
 # ROC curve calculation
-testset_partial= iter(testloader).next()
-testset_partial_I , testset_partial_labels = testset_partial[0], testset_partial[1] 
-predictions = [net(image[None]).item() for image in testset_partial_I ]
+
+# testset_partial= iter(testloader).next()
+# testset_partial_I , testset_partial_labels = testset_partial[0], testset_partial[1] 
+# predictions = [net(image[None]).item() for image in testset_partial_I ]
+
+predictions = []
+labels = []
 
 
-fpr, tpr, thresholds = metrics.roc_curve(testset_partial_labels, predictions)
+for k, testset_partial in enumerate(testloader):
+    if k <100000:
+        testset_partial_I , testset_partial_labels = testset_partial[0].to(device), testset_partial[1].to(device)
+        predictions += [net(image[None]).item() for image in testset_partial_I ]
+        labels += testset_partial_labels.tolist()
+    if k%100==0:
+        print(k)
+
+fpr, tpr, thresholds = metrics.roc_curve(labels, predictions)
 
 # importing the required module 
 import matplotlib.pyplot as plt 
@@ -225,11 +243,39 @@ plt.title('Reciever operating characteristic curve')
   
 # function to show the plot 
 plt.show()
-# %%
-# Commands for server: 
-# grun *.py
-# -t tmux a
-# nvidia smi
+
+# plot all ROC curves from pickle 
+print("Pickling accuracies...")
+for epoch in range(epochs): 
+
+    file_name= PicklingPath+"PredictionsAndLabelsTrial1Epoch"+str(epoch)
+    import pickle
+    with open(file_name, 'rb') as pickle_file:
+        [predictions,labels] = pickle.load(pickle_file)
+        pickle_file.close()
+     
+    fpr, tpr, thresholds = metrics.roc_curve(labels, predictions)
+
+    # importing the required module 
+    import matplotlib.pyplot as plt 
+    # x axis and y axis values 
+    x ,y = fpr, tpr
+
+    # plotting the points  
+    plt.plot(x, y,marker='x') 
+    plt.plot(x, x,marker='x')
+    
+    # naming the x axis 
+    plt.xlabel('False Positive Rate') 
+    # naming the y axis 
+    plt.ylabel('True Positive Rate') 
+    
+    # giving a title to my graph 
+    plt.title('Reciever operating characteristic curve epoch '+str(epoch)) 
+    
+    # function to show the plot 
+    plt.show()
+
 
 # %% Optimisation of hyperparameters
 

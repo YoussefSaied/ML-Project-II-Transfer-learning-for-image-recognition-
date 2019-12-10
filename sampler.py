@@ -48,14 +48,7 @@ class BalancedBatchSampler(torch.utils.data.sampler.Sampler):
         if self.labels is not None:
             return self.labels[idx].item()
         else:
-            # Trying guessing
-            dataset_type = type(dataset)
-            if is_torchvision_installed and dataset_type is torchvision.datasets.MNIST:
-                return dataset.train_labels[idx].item()
-            elif is_torchvision_installed and dataset_type is torchvision.datasets.ImageFolder:
-                return dataset.imgs[idx][1]
-            else:
-                raise Exception("You should pass the tensor of labels to the constructor as second argument")
+            raise Exception("You should pass the tensor of labels to the constructor as second argument")
 
     def __len__(self):
         return self.balanced_max*len(self.keys)
@@ -117,15 +110,13 @@ def accuracy(net, loader,device="cpu"):
     correct = 0.0
     total = 0.0
     with torch.no_grad():
-        data =iter(loader).next()
-        images, labels = data[0].to(device), data[1].to(device)
-        predicted = net(images)
-        print(predicted.squeeze())
-        predicted = (torch.sigmoid(predicted)*2 -1)
-        predicted[predicted<0]=-1.0
-        predicted[predicted>0]=1.0
-        print(predicted.squeeze())
-        print(labels.squeeze())
-        total += labels.size(0)
-        correct += (predicted.squeeze() == labels.squeeze()).sum()
+        for data in loader:
+            images, labels = data[0].to(device), data[1].to(device)
+            predicted = net(images)
+            #print(predicted.squeeze())
+            predicted = torch.sign(predicted)
+            #print(predicted.squeeze())
+            #print(labels.squeeze())
+            total += labels.size(0)
+            correct += (predicted.squeeze() == labels.squeeze()).long().sum().item()
     return correct/total
