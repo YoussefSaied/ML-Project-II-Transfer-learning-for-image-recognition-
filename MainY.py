@@ -137,7 +137,7 @@ if train_or_not:
         print("Saving predictions and calculating accuracies...")
         predictions = []
         labels = []
-        for testset_partial in testloader
+        for testset_partial in testloader:
             testset_partial_I , testset_partial_labels = testset_partial[0], testset_partial[1] 
             predictions += [net(image[None]).item() for image in testset_partial_I ]
             labels += testset_partial_labels 
