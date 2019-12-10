@@ -2,7 +2,7 @@
 #Our variables:
 YoussefPathModel= '/home/youssef/EPFL/MA1/Machine learning/MLProject2/ML2/youssefserver.modeldict'
 Youssefdatapath = '/home/youssef/EPFL/MA1/Machine learning/MLProject2/Data'
-YoussefServerPathModel= '/home/saied/ML/ML2/youssefServer3.modeldict'
+YoussefServerPathModel= '/home/saied/ML/ML2/youssefServer4.modeldict'
 YoussefServerdatapath = '/data/mgeiger/gg2/data'
 YoussefServerPicklingPath = '/home/saied/ML/ML2/'
 
@@ -137,7 +137,7 @@ if train_or_not:
         predictions = []
         labels = []
         for testset_partial in testloader:
-            testset_partial_I , testset_partial_labels = testset_partial[0], testset_partial[1] 
+            testset_partial_I , testset_partial_labels = testset_partial[0].to(device), testset_partial[1].to(device)
             predictions += [net(image[None]).item() for image in testset_partial_I ]
             labels += testset_partial_labels 
         file_name= PicklingPath+"PredictionsAndLabelsTrial1Epoch"+str(i)
