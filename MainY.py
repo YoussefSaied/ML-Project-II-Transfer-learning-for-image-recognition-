@@ -110,7 +110,6 @@ if train_or_not:
     test_accuracy_list = []
     for epoch in range(epochs):  # loop over the dataset multiple times
         running_loss = 0.0
-        test_accuracy = 0.0 
         for i, data in enumerate(trainloader, 0):
             # get the inputs; data is a list of [inputs, labels]
             inputs, labels = data[0].to(device), data[1].to(device)
