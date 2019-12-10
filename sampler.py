@@ -118,7 +118,7 @@ def accuracy(net, loader,device="cpu"):
     total = 0.0
     with torch.no_grad():
         data =iter(loader).next()
-        images, labels = data[0], data[1]
+        images, labels = data[0].to(device), data[1].to(device)
         predicted = net(images)
         predicted = (torch.sigmoid(predicted)*2 -1)
         predicted[predicted<0]=-1.0

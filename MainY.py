@@ -82,10 +82,10 @@ lrv=0.01
 from sampler import accuracy
 
 def train_accuracy(net):
-    return accuracy(net, loader= trainloader,device="cpu")
+    return accuracy(net, loader= trainloader,device=device)
 
 def test_accuracy(net):
-    return accuracy(net, loader= testloader,device="cpu")
+    return accuracy(net, loader= testloader,device=device)
 
 
 #Option to use a saved model parameters
