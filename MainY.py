@@ -107,9 +107,10 @@ net.train()
 
 if train_or_not:
     print("Starting training...")
-    train_accuracy_list = np.array([])
+    train_accuracy_list = np.array([0])
     test_accuracy_list = []
     for epoch in range(epochs):  # loop over the dataset multiple times
+        print("Starting epoch %d"%epoch)
         running_loss = 0.0
         for i, data in enumerate(trainloader, 0):
             # get the inputs; data is a list of [inputs, labels]
