@@ -8,13 +8,13 @@ YoussefServerPicklingPath = '/home/saied/ML/ML2/'
 
 #Global variables:
 use_saved_model =1
-save_trained_model=1
-train_or_not =1
+save_trained_model=0
+train_or_not =0
 epochs =20
 PicklingPath=YoussefServerPicklingPath
 PathModel= YoussefServerPathModel
 datapath = YoussefServerdatapath
-proportion_traindata = 0.8 # the proportion of the full dataset used for training
+proportion_traindata = 0.99 # the proportion of the full dataset used for training
 
 # %% Import Dataset and create trainloader 
 import datasetY as dataset
@@ -42,7 +42,7 @@ print(len(trainset))
 
 # Dataloaders
 batch_sizev=8 # 32>*>8
-test_batch_size = 300
+test_batch_size = 2000
 
 trainset_labels = full_dataset.get_labels()[indices[:train_size]] 
 testset_labels= full_dataset.get_labels()[indices[train_size:]] 
@@ -162,7 +162,7 @@ if train_or_not:
             break
         train_accuracy_list = np.concatenate((train_accuracy_list, np.array([test_accuracyv])))
         net.train()
-        
+
     print("Pickling accuracies...")
     file_name= PicklingPath+"accuracies"
     if os.path.exists(file_name):  # checking if there is a file with this name

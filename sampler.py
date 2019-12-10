@@ -123,6 +123,8 @@ def accuracy(net, loader,device="cpu"):
         predicted = (torch.sigmoid(predicted)*2 -1)
         predicted[predicted<0]=-1.0
         predicted[predicted>0]=1.0
+        print(predicted.squeeze())
+        print(labels.squeeze())
         total += labels.size(0)
         correct += (predicted.squeeze() == labels.squeeze()).sum()
     return correct/total
