@@ -16,7 +16,6 @@ PathModel= YoussefServerPathModel
 datapath = YoussefServerdatapath
 proportion_traindata = 0.8 # the proportion of the full dataset used for training
 
-
 # %% Import Dataset and create trainloader 
 import datasetY as dataset
 import torch
@@ -32,6 +31,8 @@ full_dataset = dataset.GG2(datapath)
 
 train_size = int(proportion_traindata * len(full_dataset))
 test_size = len(full_dataset) - train_size
+
+
 
 # To split the full_dataset
 
@@ -139,7 +140,7 @@ if train_or_not:
         for testset_partial in testloader:
             testset_partial_I , testset_partial_labels = testset_partial[0], testset_partial[1] 
             predictions += [net(image[None]).item() for image in testset_partial_I ]
-            labels += testset_partial_labels 
+            labels += testset_partial_labels.toList()
         file_name= PicklingPath+"PredictionsAndLabelsTrial1Epoch"+str(i)
         if os.path.exists(file_name):  # checking if there is a file with this name
             os.remove(file_name)  # deleting the file
@@ -181,7 +182,6 @@ net.eval()
 
 test_accuracyv = test_accuracy(net)
 print("Test accuracy: %5f"%test_accuracyv)
-
 from sklearn import metrics
 
 # ROC curve calculation
