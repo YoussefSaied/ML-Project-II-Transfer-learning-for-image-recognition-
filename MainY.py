@@ -14,7 +14,7 @@ epochs =2
 PicklingPath=YoussefServerPicklingPath
 PathModel= YoussefServerPathModel
 datapath = YoussefServerdatapath
-proportion_traindata = 0.8 # the proportion of the full dataset used for training
+proportion_traindata = 0.01 # the proportion of the full dataset used for training
 
 # %% Import Dataset and create trainloader 
 import datasetY as dataset
@@ -142,6 +142,8 @@ if train_or_not:
                 testset_partial_I , testset_partial_labels = testset_partial[0].to(device), testset_partial[1].to(device)
                 predictions += [net(image[None]).item() for image in testset_partial_I ]
                 labels += testset_partial_labels.tolist()
+            else:
+                break
         file_name= PicklingPath+"PredictionsAndLabelsTrial1Epoch"+str(i)
         if os.path.exists(file_name):  # checking if there is a file with this name
             os.remove(file_name)  # deleting the file
@@ -149,7 +151,7 @@ if train_or_not:
         with open(file_name, 'wb') as pickle_file:
             pickle.dump([predictions,labels],pickle_file)
             pickle_file.close()
-    
+        print("Pickling done...")
 
         # calculate and save accuracy and stop if test accuracy increases 
         net.eval()
