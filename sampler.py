@@ -118,13 +118,11 @@ def accuracy(net, loader,device="cpu"):
     total = 0.0
     with torch.no_grad():
         data =iter(loader).next()
-        images, labels = data[0].to(device), data[1].to(device)
+        images, labels = data[0], data[1]
         predicted = net(images)
-        print(predicted.squeeze())
-        predicted = (torch.sigmoid(predicted)*2 -1).numpy()
+        predicted = (torch.sigmoid(predicted)*2 -1)
         predicted[predicted<0]=-1.0
         predicted[predicted>0]=1.0
         total += labels.size(0)
-        print((predicted.astype(int).squeeze() == labels.numpy().squeeze()).astype(int))
-        correct += (predicted.astype(int).squeeze() == labels.numpy().squeeze()).astype(int).sum()
+        correct += (predicted.squeeze() == labels.squeeze()).sum()
     return correct/total
