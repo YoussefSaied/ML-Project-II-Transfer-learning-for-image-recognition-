@@ -138,7 +138,7 @@ if train_or_not:
         predictions = []
         labels = []
         for testset_partial in testloader:
-            testset_partial_I , testset_partial_labels = testset_partial[0], testset_partial[1] 
+            testset_partial_I , testset_partial_labels = testset_partial[0].to(device), testset_partial[1].to(device)
             predictions += [net(image[None]).item() for image in testset_partial_I ]
             labels += testset_partial_labels.toList()
         file_name= PicklingPath+"PredictionsAndLabelsTrial1Epoch"+str(i)
