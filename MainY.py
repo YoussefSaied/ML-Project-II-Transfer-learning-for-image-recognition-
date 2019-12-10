@@ -137,10 +137,11 @@ if train_or_not:
         print("Saving predictions and calculating accuracies...")
         predictions = []
         labels = []
-        for testset_partial in testloader:
-            testset_partial_I , testset_partial_labels = testset_partial[0].to(device), testset_partial[1].to(device)
-            predictions += [net(image[None]).item() for image in testset_partial_I ]
-            labels += testset_partial_labels.toList()
+        for k, testset_partial in enumerate(testloader):
+            if k <3:
+                testset_partial_I , testset_partial_labels = testset_partial[0].to(device), testset_partial[1].to(device)
+                predictions += [net(image[None]).item() for image in testset_partial_I ]
+                labels += testset_partial_labels.toList()
         file_name= PicklingPath+"PredictionsAndLabelsTrial1Epoch"+str(i)
         if os.path.exists(file_name):  # checking if there is a file with this name
             os.remove(file_name)  # deleting the file
