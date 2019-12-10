@@ -113,7 +113,7 @@ def random_splitY(dataset, lengths):
      zip(itertools.accumulate(lengths), lengths)]
 
 
-def accuracy(net, loader,device):
+def accuracy(net, loader,device="cpu"):
     correct = 0.0
     total = 0.0
     with torch.no_grad():

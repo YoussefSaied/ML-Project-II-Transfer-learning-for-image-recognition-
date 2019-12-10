@@ -4,13 +4,14 @@ YoussefPathModel= '/home/youssef/EPFL/MA1/Machine learning/MLProject2/ML2/yousse
 Youssefdatapath = '/home/youssef/EPFL/MA1/Machine learning/MLProject2/Data'
 YoussefServerPathModel= '/home/saied/ML/ML2/youssefServer3.modeldict'
 YoussefServerdatapath = '/data/mgeiger/gg2/data'
-
+YoussefServerPicklingPath = '/home/saied/ML/ML2/'
 
 #Global variables:
 use_saved_model =1
 save_trained_model=1
 train_or_not =1
-epochs =10
+epochs =2
+PicklingPath=YoussefServerPicklingPath
 PathModel= YoussefServerPathModel
 datapath = YoussefServerdatapath
 proportion_traindata = 0.8 # the proportion of the full dataset used for training
@@ -22,6 +23,7 @@ import torch
 import importlib
 from sampler import *
 import itertools
+import numpy as np
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 #importlib.reload(module)
 
@@ -104,6 +106,8 @@ net.train()
 
 if train_or_not:
     print("Starting training...")
+    train_accuracy_list = np.array([])
+    test_accuracy_list = []
     for epoch in range(epochs):  # loop over the dataset multiple times
         running_loss = 0.0
         test_accuracy = 0.0 
@@ -125,9 +129,35 @@ if train_or_not:
             # print statistics
             running_loss += loss.item()
             if i % 2000 == 1999:    # print every 5 mini-batches
-                print('[%5d, %5d] loss: %.6f, test accuracy: %.3f ' %
-                        (epoch+1, i + 1, running_loss/2000 , test_accuracy))
+                print('[%5d, %5d] loss: %.6f ' %
+                        (epoch+1, i + 1, running_loss/2000) )
                 running_loss = 0.0
+        
+        # save predictions and labels for ROC curve calculation
+        print("Saving predictions and calculating accuracies...")
+        predictions = []
+        labels = []
+        for testset_partial in testloader
+            testset_partial_I , testset_partial_labels = testset_partial[0], testset_partial[1] 
+            predictions += [net(image[None]).item() for image in testset_partial_I ]
+            labels += testset_partial_labels 
+        file_name= PicklingPath+"PredictionsAndLabelsTrial1Epoch"+str(i)
+        if os.path.exists(file_name):  # checking if there is a file with this name
+            os.remove(file_name)  # deleting the file
+        import pickle
+        with open(file_name, 'wb') as pickle_file:
+            pickle.dump([predictions,labels],pickle_file)
+            pickle_file.close()
+    
+
+        # calculate and save accuracy and stop if test accuracy increases 
+        net.eval()
+        test_accuracyv = test_accuracy(net)
+        print("Test accuracy: %5f"%test_accuracyv)
+        if test_accuracyv< np.min(train_accuracy_list):
+            break
+        train_accuracy_list = np.concatenate((train_accuracy_list, np.array([test_accuracyv])))
+        net.train()
 
     print('Finished Training')
     if save_trained_model:
@@ -140,6 +170,8 @@ if torch.cuda.is_available() : #ie if on the server
     net.eval()
     test_accuracyv = test_accuracy(net)
     print("Test accuracy: %5f"%test_accuracyv)
+    train_accuracyv = train_accuracy(net)
+    print("Train accuracy: %5f"%train_accuracyv)
     import sys
     sys.exit()
 
