@@ -1,21 +1,28 @@
 # %% Global parameters
 #Our variables:
-YoussefPathModel= '/home/youssef/EPFL/MA1/Machine learning/MLProject2/ML2/youssefserver.modeldict'
+YoussefPathModel= '/home/youssef/EPFL/MA1/Machine learning/MLProject2/ML2/youssefServer4.modeldict'
 Youssefdatapath = '/home/youssef/EPFL/MA1/Machine learning/MLProject2/Data'
-YoussefServerPathModel= '/home/saied/ML/ML2/youssefServer4.modeldict'
+YoussefServerPathModel= '/home/saied/ML/ML2/youssefServer5.modeldict'
 YoussefServerdatapath = '/data/mgeiger/gg2/data'
 YoussefServerPicklingPath = '/home/saied/ML/ML2/'
 YoussefPicklingPath = '/home/youssef/EPFL/MA1/Machine learning/MLProject2/ML2/Predictions/'
 
 #Global variables:
 use_saved_model =1
-save_trained_model=0
-train_or_not =0
-epochs =20
-PicklingPath=YoussefPicklingPath
-PathModel= YoussefPathModel
-datapath = Youssefdatapath
-proportion_traindata = 0.99 # the proportion of the full dataset used for training
+save_trained_model=1
+train_or_not =1
+epochs =2
+OnServer =1
+if OnServer:
+    PicklingPath=YoussefServerPicklingPath
+    PathModel= YoussefServerPathModel
+    datapath = YoussefServerdatapath
+else:
+    PicklingPath=YoussefPicklingPath
+    PathModel= YoussefPathModel
+    datapath = Youssefdatapath
+proportion_traindata = 0.8 # the proportion of the full dataset used for training
+printevery = 10
 
 # %% Import Dataset and create trainloader 
 import datasetY as dataset
@@ -24,6 +31,7 @@ import importlib
 from sampler import *
 import itertools
 import numpy as np
+
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 #importlib.reload(module)
 
@@ -42,8 +50,8 @@ indices, sets = random_splitY(full_dataset, [train_size, test_size])
 print(len(trainset))
 
 # Dataloaders
-batch_sizev=8 # 32>*>8
-test_batch_size = 20
+batch_sizev=256 # 32>*>8
+test_batch_size = 1
 
 trainset_labels = full_dataset.get_labels()[indices[:train_size]] 
 testset_labels= full_dataset.get_labels()[indices[train_size:]] 
@@ -53,7 +61,7 @@ samplertest = BalancedBatchSampler2(testset)
 
 trainloader = torch.utils.data.DataLoader(trainset,sampler = samplerv , batch_size= batch_sizev, num_workers=2)
 testloader = torch.utils.data.DataLoader(testset,sampler = samplertest , batch_size= test_batch_size, num_workers=2)
-ROCloader = torch.utils.data.DataLoader(testset)
+ROCloader = torch.utils.data.DataLoader(testset,batch_size=4)
 # %% Import Neural network
 
 net = torch.hub.load('rwightman/gen-efficientnet-pytorch', 'efficientnet_b0',
@@ -134,9 +142,9 @@ if train_or_not:
 
             # print statistics
             running_loss += loss.item()
-            if i % 2000 == 1999:    # print every 5 mini-batches
+            if i % printevery == printevery-1:    # print every 5 mini-batches
                 print('[%5d, %5d] loss: %.6f ' %
-                        (epoch+1, i + 1, running_loss/2000) )
+                        (epoch+1, i + 1, running_loss/printevery) )
                 running_loss = 0.0
         
         # save predictions and labels for ROC curve calculation
@@ -216,7 +224,7 @@ labels = []
 for k, testset_partial in enumerate(testloader):
     if k <100000:
         testset_partial_I , testset_partial_labels = testset_partial[0].to(device), testset_partial[1].to(device)
-        predictions += [net(image[None]).item() for image in testset_partial_I ]
+        predictions += [p.item() for p in net(testset_partial_I) ]
         labels += testset_partial_labels.tolist()
     if k%100==0:
         print(k)
