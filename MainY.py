@@ -22,7 +22,7 @@ else:
     PathModel= YoussefPathModel
     datapath = Youssefdatapath
 proportion_traindata = 0.8 # the proportion of the full dataset used for training
-printevery = 10
+printevery = 100
 
 # %% Import Dataset and create trainloader 
 import datasetY as dataset
@@ -146,7 +146,7 @@ if train_or_not:
 
             # print statistics
             running_loss += loss.item()
-            if i % printevery == printevery-1:    # print every 5 mini-batches
+            if i % printevery == printevery-1:    # print every n mini-batches
                 print('[%5d, %5d] loss: %.6f ' %
                         (epoch+1, i + 1, running_loss/printevery) )
                 running_loss = 0.0
