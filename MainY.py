@@ -53,14 +53,14 @@ print(len(trainset))
 batch_sizev=128 # 32>*>8
 test_batch_size = 1
 
-trainset_labels = full_dataset.get_labels()[indices[:train_size]] 
-testset_labels= full_dataset.get_labels()[indices[train_size:]] 
+# trainset_labels = full_dataset.get_labels()[indices[:train_size]] 
+# testset_labels= full_dataset.get_labels()[indices[train_size:]] 
 
-samplerv= BalancedBatchSampler2(trainset)
-samplertest = BalancedBatchSampler2(testset)
+# samplerv= BalancedBatchSampler2(trainset)
+# samplertest = BalancedBatchSampler2(testset)
 
-trainloader = torch.utils.data.DataLoader(trainset,sampler = samplerv , batch_size= batch_sizev, num_workers=2)
-testloader = torch.utils.data.DataLoader(testset,sampler = samplertest , batch_size= test_batch_size, num_workers=2)
+trainloader = torch.utils.data.DataLoader(trainset , batch_size= batch_sizev, num_workers=2)
+testloader = torch.utils.data.DataLoader(testset , batch_size= test_batch_size, num_workers=2)
 ROCloader = torch.utils.data.DataLoader(testset,batch_size=4)
 # %% Import Neural network
 
