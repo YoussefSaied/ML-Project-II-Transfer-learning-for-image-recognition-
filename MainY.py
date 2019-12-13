@@ -162,12 +162,12 @@ if train_or_not:
         labels = []
         for k, testset_partial in enumerate(testloader):
             with torch.no_grad():
-            if k <100000:
-                testset_partial_I , testset_partial_labels = testset_partial[0].to(device), testset_partial[1].to(device)
-                predictions += [net(image[None]).item() for image in testset_partial_I ]
-                labels += testset_partial_labels.tolist()
-            else:
-                break
+                if k <100000:
+                    testset_partial_I , testset_partial_labels = testset_partial[0].to(device), testset_partial[1].to(device)
+                    predictions += [net(image[None]).item() for image in testset_partial_I ]
+                    labels += testset_partial_labels.tolist()
+                else:
+                    break
         
         net.train()
         file_name= PicklingPath+"PredictionsAndLabelsTrial1Epoch"+str(epoch)
@@ -232,69 +232,69 @@ from sklearn import metrics
 predictions = []
 labels = []
 with torch.no_grad():
-if False:
-    for k, testset_partial in enumerate(testloader):
-        if k <100000:
-            testset_partial_I , testset_partial_labels = testset_partial[0].to(device), testset_partial[1].to(device)
-            predictions += [p.item() for p in net(testset_partial_I) ]
-            labels += testset_partial_labels.tolist()
-        if k%100==0:
-            print(k)
+    if False:
+        for k, testset_partial in enumerate(testloader):
+            if k <100000:
+                testset_partial_I , testset_partial_labels = testset_partial[0].to(device), testset_partial[1].to(device)
+                predictions += [p.item() for p in net(testset_partial_I) ]
+                labels += testset_partial_labels.tolist()
+            if k%100==0:
+                print(k)
 
-    fpr, tpr, thresholds = metrics.roc_curve(labels, predictions)
+        fpr, tpr, thresholds = metrics.roc_curve(labels, predictions)
 
-    # importing the required module 
-    import matplotlib.pyplot as plt 
-    
-    # x axis and y axis values 
-    x ,y = fpr, tpr
+        # importing the required module 
+        import matplotlib.pyplot as plt 
+        
+        # x axis and y axis values 
+        x ,y = fpr, tpr
 
-    # plotting the points  
-    plt.plot(x, y,marker='x') 
-    plt.plot(x, x,marker='x')
-    
-    # naming the x axis 
-    plt.xlabel('False Positive Rate') 
-    # naming the y axis 
-    plt.ylabel('True Positive Rate') 
-    
-    # giving a title to my graph 
-    plt.title('Reciever operating characteristic curve') 
-    
-    # function to show the plot 
-    plt.show()
+        # plotting the points  
+        plt.plot(x, y,marker='x') 
+        plt.plot(x, x,marker='x')
+        
+        # naming the x axis 
+        plt.xlabel('False Positive Rate') 
+        # naming the y axis 
+        plt.ylabel('True Positive Rate') 
+        
+        # giving a title to my graph 
+        plt.title('Reciever operating characteristic curve') 
+        
+        # function to show the plot 
+        plt.show()
 
-    # plot all ROC curves from pickle 
-    print("Pickling accuracies...")
+        # plot all ROC curves from pickle 
+        print("Pickling accuracies...")
 
-for epoch in range(epochs): 
-    file_name= PicklingPath+"PredictionsAndLabelsTrial1Epoch"+str(epoch)
-    import pickle
-    with open(file_name, 'rb') as pickle_file:
-        [predictions,labels] = pickle.load(pickle_file)
-        pickle_file.close()
-    
-    fpr, tpr, thresholds = metrics.roc_curve(labels, predictions)
+    for epoch in range(epochs): 
+        file_name= PicklingPath+"PredictionsAndLabelsTrial1Epoch"+str(epoch)
+        import pickle
+        with open(file_name, 'rb') as pickle_file:
+            [predictions,labels] = pickle.load(pickle_file)
+            pickle_file.close()
+        
+        fpr, tpr, thresholds = metrics.roc_curve(labels, predictions)
 
-    # importing the required module 
-    import matplotlib.pyplot as plt 
-    # x axis and y axis values 
-    x ,y = fpr, tpr
+        # importing the required module 
+        import matplotlib.pyplot as plt 
+        # x axis and y axis values 
+        x ,y = fpr, tpr
 
-    # plotting the points  
-    plt.plot(x, y,marker='x') 
-    plt.plot(x, x,marker='x')
-    
-    # naming the x axis 
-    plt.xlabel('False Positive Rate') 
-    # naming the y axis 
-    plt.ylabel('True Positive Rate') 
-    
-    # giving a title to my graph 
-    plt.title('Reciever operating characteristic curve epoch '+str(epoch)) 
-    
-    # function to show the plot 
-    plt.show()
+        # plotting the points  
+        plt.plot(x, y,marker='x') 
+        plt.plot(x, x,marker='x')
+        
+        # naming the x axis 
+        plt.xlabel('False Positive Rate') 
+        # naming the y axis 
+        plt.ylabel('True Positive Rate') 
+        
+        # giving a title to my graph 
+        plt.title('Reciever operating characteristic curve epoch '+str(epoch)) 
+        
+        # function to show the plot 
+        plt.show()
 
 
 # %% Optimisation of hyperparameters
