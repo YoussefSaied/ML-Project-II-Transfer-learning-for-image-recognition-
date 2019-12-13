@@ -168,9 +168,9 @@ if train_or_not:
                     labels += testset_partial_labels.tolist()
                 else:
                     break
-        
-        net.train()
+
         file_name= PicklingPath+"PredictionsAndLabelsTrial1Epoch"+str(epoch)
+        import os
         if os.path.exists(file_name):  # checking if there is a file with this name
             os.remove(file_name)  # deleting the file
         import pickle
