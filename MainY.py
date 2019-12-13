@@ -56,11 +56,11 @@ test_batch_size = 1
 # trainset_labels = full_dataset.get_labels()[indices[:train_size]] 
 # testset_labels= full_dataset.get_labels()[indices[train_size:]] 
 
-# samplerv= BalancedBatchSampler2(trainset)
-# samplertest = BalancedBatchSampler2(testset)
+samplerv= BalancedBatchSampler2(trainset)
+samplertest = BalancedBatchSampler2(testset)
 
-trainloader = torch.utils.data.DataLoader(trainset,shuffle=True, batch_size= batch_sizev, num_workers=2)
-testloader = torch.utils.data.DataLoader(testset ,shuffle =True, batch_size= test_batch_size, num_workers=2)
+trainloader = torch.utils.data.DataLoader(trainset,sampler=samplerv , shuffle=False, batch_size= batch_sizev, num_workers=2)
+testloader = torch.utils.data.DataLoader(testset ,sampler = samplertest, shuffle =False, batch_size= test_batch_size, num_workers=2)
 ROCloader = torch.utils.data.DataLoader(testset,batch_size=4)
 # %% Import Neural network
 
@@ -80,7 +80,20 @@ net.to(device)
 if not torch.cuda.is_available() : #ie if NOT on the server
     print(net)
 
+# Replace all batch normalization layers by 
 
+def convert_batch_to_instance(model):
+    import torch.nn as nn
+    for child_name, child in model.named_children():
+        if isinstance(child, nn.BatchNorm2d):
+            num_features= child.num_features
+            setattr(model, child_name, nn.InstanceNorm2d(num_features=num_features))
+        else:
+            convert_batch_to_instance(child)
+
+convert_batch_to_instance(net)
+if not torch.cuda.is_available() : #ie if NOT on the server
+    print(net)
 # %% Train Neural network
 
 import torch.optim as optim
