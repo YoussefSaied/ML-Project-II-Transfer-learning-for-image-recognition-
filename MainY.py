@@ -59,8 +59,8 @@ test_batch_size = 1
 # samplerv= BalancedBatchSampler2(trainset)
 # samplertest = BalancedBatchSampler2(testset)
 
-trainloader = torch.utils.data.DataLoader(trainset , batch_size= batch_sizev, num_workers=2)
-testloader = torch.utils.data.DataLoader(testset , batch_size= test_batch_size, num_workers=2)
+trainloader = torch.utils.data.DataLoader(trainset,shuffle=true , batch_size= batch_sizev, num_workers=2)
+testloader = torch.utils.data.DataLoader(testset ,shuffle =true batch_size= test_batch_size, num_workers=2)
 ROCloader = torch.utils.data.DataLoader(testset,batch_size=4)
 # %% Import Neural network
 
@@ -152,7 +152,7 @@ if train_or_not:
                 running_loss = 0.0
 
         # fixing batch normalization statistics
-        print("Fixing batch normalization statistics...")
+        #print("Fixing batch normalization statistics...")
 
         
         # save predictions and labels for ROC curve calculation
