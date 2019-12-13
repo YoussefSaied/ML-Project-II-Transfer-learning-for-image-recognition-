@@ -8,7 +8,7 @@ YoussefServerPicklingPath = '/home/saied/ML/ML2/'
 YoussefPicklingPath = '/home/youssef/EPFL/MA1/Machine learning/MLProject2/ML2/Predictions/'
 
 #Global variables:
-use_saved_model =1
+use_saved_model =0
 save_trained_model=1
 train_or_not =1
 epochs =2
@@ -50,7 +50,7 @@ indices, sets = random_splitY(full_dataset, [train_size, test_size])
 print(len(trainset))
 
 # Dataloaders
-batch_sizev=256 # 32>*>8
+batch_sizev=128 # 32>*>8
 test_batch_size = 1
 
 trainset_labels = full_dataset.get_labels()[indices[:train_size]] 
@@ -71,8 +71,12 @@ net = torch.hub.load('rwightman/gen-efficientnet-pytorch', 'efficientnet_b0',
 net.conv_stem = torch.nn.Conv2d(4, 32, kernel_size=(3, 3), stride=(2, 2),
  padding=(1, 1), bias=False)
 net.classifier = torch.nn.Linear(1280, 1)
-net.to(device)
 
+if torch.cuda.device_count() > 1 and False:
+    import torch.nn as nn
+    print("Let's use", torch.cuda.device_count(), "GPUs!")
+    model = nn.DataParallel(model)
+net.to(device)
 if not torch.cuda.is_available() : #ie if NOT on the server
     print(net)
 
@@ -146,18 +150,26 @@ if train_or_not:
                 print('[%5d, %5d] loss: %.6f ' %
                         (epoch+1, i + 1, running_loss/printevery) )
                 running_loss = 0.0
+
+        # fixing batch normalization statistics
+        print("Fixing batch normalization statistics...")
+
         
         # save predictions and labels for ROC curve calculation
         print("Saving predictions and calculating accuracies...")
+        net.eval()
         predictions = []
         labels = []
         for k, testset_partial in enumerate(testloader):
+            with torch.no_grad():
             if k <100000:
                 testset_partial_I , testset_partial_labels = testset_partial[0].to(device), testset_partial[1].to(device)
                 predictions += [net(image[None]).item() for image in testset_partial_I ]
                 labels += testset_partial_labels.tolist()
             else:
                 break
+        
+        net.train()
         file_name= PicklingPath+"PredictionsAndLabelsTrial1Epoch"+str(epoch)
         if os.path.exists(file_name):  # checking if there is a file with this name
             os.remove(file_name)  # deleting the file
@@ -205,7 +217,7 @@ if torch.cuda.is_available() : #ie if on the server
 
 # Testing mode for net
 net.eval()
-if True:
+if False:
     test_accuracyv = test_accuracy(net)
     print("Test accuracy: %5f"%test_accuracyv)
 
@@ -219,49 +231,49 @@ from sklearn import metrics
 
 predictions = []
 labels = []
+with torch.no_grad():
+if False:
+    for k, testset_partial in enumerate(testloader):
+        if k <100000:
+            testset_partial_I , testset_partial_labels = testset_partial[0].to(device), testset_partial[1].to(device)
+            predictions += [p.item() for p in net(testset_partial_I) ]
+            labels += testset_partial_labels.tolist()
+        if k%100==0:
+            print(k)
 
+    fpr, tpr, thresholds = metrics.roc_curve(labels, predictions)
 
-for k, testset_partial in enumerate(testloader):
-    if k <100000:
-        testset_partial_I , testset_partial_labels = testset_partial[0].to(device), testset_partial[1].to(device)
-        predictions += [p.item() for p in net(testset_partial_I) ]
-        labels += testset_partial_labels.tolist()
-    if k%100==0:
-        print(k)
+    # importing the required module 
+    import matplotlib.pyplot as plt 
+    
+    # x axis and y axis values 
+    x ,y = fpr, tpr
 
-fpr, tpr, thresholds = metrics.roc_curve(labels, predictions)
+    # plotting the points  
+    plt.plot(x, y,marker='x') 
+    plt.plot(x, x,marker='x')
+    
+    # naming the x axis 
+    plt.xlabel('False Positive Rate') 
+    # naming the y axis 
+    plt.ylabel('True Positive Rate') 
+    
+    # giving a title to my graph 
+    plt.title('Reciever operating characteristic curve') 
+    
+    # function to show the plot 
+    plt.show()
 
-# importing the required module 
-import matplotlib.pyplot as plt 
-  
-# x axis and y axis values 
-x ,y = fpr, tpr
+    # plot all ROC curves from pickle 
+    print("Pickling accuracies...")
 
-# plotting the points  
-plt.plot(x, y,marker='x') 
-plt.plot(x, x,marker='x')
-  
-# naming the x axis 
-plt.xlabel('False Positive Rate') 
-# naming the y axis 
-plt.ylabel('True Positive Rate') 
-  
-# giving a title to my graph 
-plt.title('Reciever operating characteristic curve') 
-  
-# function to show the plot 
-plt.show()
-
-# plot all ROC curves from pickle 
-print("Pickling accuracies...")
 for epoch in range(epochs): 
-
     file_name= PicklingPath+"PredictionsAndLabelsTrial1Epoch"+str(epoch)
     import pickle
     with open(file_name, 'rb') as pickle_file:
         [predictions,labels] = pickle.load(pickle_file)
         pickle_file.close()
-     
+    
     fpr, tpr, thresholds = metrics.roc_curve(labels, predictions)
 
     # importing the required module 
