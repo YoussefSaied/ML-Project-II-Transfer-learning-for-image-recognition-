@@ -10,9 +10,9 @@ YoussefPicklingPath = '/home/youssef/EPFL/MA1/Machine learning/MLProject2/ML2/Pr
 #Global variables:
 use_saved_model =0
 save_trained_model=1
-train_or_not =0
-epochs =2
-OnServer =0
+train_or_not =1
+epochs =5
+OnServer =1
 if OnServer:
     PicklingPath=YoussefServerPicklingPath
     PathModel= YoussefServerPathModel
@@ -68,7 +68,7 @@ net = torch.hub.load('rwightman/gen-efficientnet-pytorch', 'tf_mobilenetv3_small
  pretrained=False)
 
 # Change First and Last Layer
-net.conv_stem.in_channels=4
+net.conv_stem = torch.nn.Conv2d(4,16,kernel_size=(2,2),bias=false)
 net.classifier = torch.nn.Linear(1024, 1)
 
 if torch.cuda.device_count() > 1 and False:
