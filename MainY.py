@@ -170,7 +170,7 @@ if train_or_not:
         # save predictions and labels for ROC curve calculation
         print("Saving predictions and calculating accuracies...")
         if False:
-            #net.eval()
+            net.eval()
             predictions = []
             labels = []
             for k, testset_partial in enumerate(testloader):
@@ -193,7 +193,7 @@ if train_or_not:
             print("Pickling done...")
 
         # calculate and save accuracy and stop if test accuracy increases 
-        #net.eval()
+        net.eval()
         test_accuracyv =  ROC_accuracy(net)
         print("Test accuracy: %5f"%test_accuracyv)
         if test_accuracyv< np.min(train_accuracy_list) and False:
@@ -219,7 +219,7 @@ if train_or_not:
         print("Saving model...")
 
 if torch.cuda.is_available() : #ie if on the server
-    #net.eval()
+    net.eval()
     test_accuracyv = test_accuracy(net)
     print("Test accuracy: %5f"%test_accuracyv)
     train_accuracyv =  ROC_accuracy(net)
