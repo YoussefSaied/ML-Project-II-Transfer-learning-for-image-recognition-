@@ -59,9 +59,9 @@ test_batch_size = 1
 samplerv= BalancedBatchSampler2(trainset)
 samplertest = BalancedBatchSampler2(testset)
 
-trainloader = torch.utils.data.DataLoader(trainset,sampler=samplerv , shuffle=False, batch_size= batch_sizev, num_workers=1)
-testloader = torch.utils.data.DataLoader(testset ,sampler = samplertest, shuffle =False, batch_size= test_batch_size, num_workers=1)
-ROCloader = torch.utils.data.DataLoader(testset,batch_size=4)
+trainloader = torch.utils.data.DataLoader(trainset , shuffle=False, batch_size= batch_sizev, num_workers=4)
+testloader = torch.utils.data.DataLoader(testset , shuffle =False, batch_size= test_batch_size, num_workers=4)
+ROCloader = torch.utils.data.DataLoader(testset,batch_size=1)
 # %% Import Neural network
 
 net = torch.hub.load('rwightman/gen-efficientnet-pytorch', 'efficientnet_b0',
