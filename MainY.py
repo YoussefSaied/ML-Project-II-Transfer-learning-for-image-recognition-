@@ -50,7 +50,7 @@ indices, sets = random_splitY(full_dataset, [train_size, test_size])
 print(len(trainset))
 
 # Dataloaders
-batch_sizev=32 # 32>*>8
+batch_sizev=128 # 32>*>8
 test_batch_size = 1
 
 # trainset_labels = full_dataset.get_labels()[indices[:train_size]] 
@@ -59,8 +59,8 @@ test_batch_size = 1
 samplerv= BalancedBatchSampler2(trainset)
 samplertest = BalancedBatchSampler2(testset)
 
-trainloader = torch.utils.data.DataLoader(trainset , shuffle=True, batch_size= batch_sizev)
-testloader = torch.utils.data.DataLoader(testset , shuffle =True, batch_size= test_batch_size)
+trainloader = torch.utils.data.DataLoader(trainset, sampler=samplerv, shuffle=True, batch_size= batch_sizev)
+testloader = torch.utils.data.DataLoader(testset, shuffle =True, batch_size= test_batch_size)
 ROCloader = torch.utils.data.DataLoader(testset,batch_size=1)
 # %% Import Neural network
 
