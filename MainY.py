@@ -68,8 +68,7 @@ net = torch.hub.load('rwightman/gen-efficientnet-pytorch', 'tf_mobilenetv3_small
  pretrained=False)
 
 # Change First and Last Layer
-net.conv_stem = torch.nn.Conv2d(4, 16, kernel_size=(3, 3), stride=(2, 2),
- padding= 'same' , bias=False)
+net.conv_stem = torch.nn.Conv2d(4, 16, kernel_size=(3, 3), stride=(2, 2), padding= (1,1) , bias=False)
 net.classifier = torch.nn.Linear(1024, 1)
 
 if torch.cuda.device_count() > 1 and False:
