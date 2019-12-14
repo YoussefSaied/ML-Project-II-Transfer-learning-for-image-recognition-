@@ -11,7 +11,7 @@ YoussefPicklingPath = '/home/youssef/EPFL/MA1/Machine learning/MLProject2/ML2/Pr
 use_saved_model =0
 save_trained_model=1
 train_or_not =1
-epochs =5
+epochs =2
 OnServer =1
 if OnServer:
     PicklingPath=YoussefServerPicklingPath
@@ -50,7 +50,7 @@ indices, sets = random_splitY(full_dataset, [train_size, test_size])
 print(len(trainset))
 
 # Dataloaders
-batch_sizev=8 # 32>*>8
+batch_sizev=64 # 32>*>8
 test_batch_size = 1
 
 # trainset_labels = full_dataset.get_labels()[indices[:train_size]] 
@@ -80,8 +80,7 @@ net.to(device)
 if not torch.cuda.is_available() : #ie if NOT on the server
     print(net)
 
-# Replace all batch normalization layers by 
-
+# Replace all batch normalization layers by Instance
 def convert_batch_to_instance(model):
     import torch.nn as nn
     for child_name, child in model.named_children():
@@ -123,6 +122,7 @@ if use_saved_model:
     if os.path.isfile(PathModel):
         if os.stat(PathModel).st_size > 0:
             net.load_state_dict(torch.load(PathModel,map_location=torch.device(device   )))
+            convert_batch_to_instance(net)
             print("Loading model...")
         else: 
             print("Empty file...")
@@ -170,27 +170,28 @@ if train_or_not:
         
         # save predictions and labels for ROC curve calculation
         print("Saving predictions and calculating accuracies...")
-        #net.eval()
-        predictions = []
-        labels = []
-        for k, testset_partial in enumerate(testloader):
-            with torch.no_grad():
-                if k <100000:
-                    testset_partial_I , testset_partial_labels = testset_partial[0].to(device), testset_partial[1].to(device)
-                    predictions += [net(image[None]).item() for image in testset_partial_I ]
-                    labels += testset_partial_labels.tolist()
-                else:
-                    break
+        if False:
+            #net.eval()
+            predictions = []
+            labels = []
+            for k, testset_partial in enumerate(testloader):
+                with torch.no_grad():
+                    if k <100000:
+                        testset_partial_I , testset_partial_labels = testset_partial[0].to(device), testset_partial[1].to(device)
+                        predictions += [net(image[None]).item() for image in testset_partial_I ]
+                        labels += testset_partial_labels.tolist()
+                    else:
+                        break
 
-        file_name= PicklingPath+"PredictionsAndLabelsTrial1Epoch"+str(epoch)
-        import os
-        if os.path.exists(file_name):  # checking if there is a file with this name
-            os.remove(file_name)  # deleting the file
-        import pickle
-        with open(file_name, 'wb') as pickle_file:
-            pickle.dump([predictions,labels],pickle_file)
-            pickle_file.close()
-        print("Pickling done...")
+            file_name= PicklingPath+"PredictionsAndLabelsTrial1Epoch"+str(epoch)
+            import os
+            if os.path.exists(file_name):  # checking if there is a file with this name
+                os.remove(file_name)  # deleting the file
+            import pickle
+            with open(file_name, 'wb') as pickle_file:
+                pickle.dump([predictions,labels],pickle_file)
+                pickle_file.close()
+            print("Pickling done...")
 
         # calculate and save accuracy and stop if test accuracy increases 
         #net.eval()
@@ -229,8 +230,8 @@ if torch.cuda.is_available() : #ie if on the server
 # %% Metrics
 
 # Testing mode for net
-net.eval()
-if False:
+#net.eval()
+if True:
     test_accuracyv = test_accuracy(net)
     print("Test accuracy: %5f"%test_accuracyv)
 
@@ -245,7 +246,7 @@ from sklearn import metrics
 predictions = []
 labels = []
 with torch.no_grad():
-    if False:
+    if True:
         for k, testset_partial in enumerate(testloader):
             if k <100000:
                 testset_partial_I , testset_partial_labels = testset_partial[0].to(device), testset_partial[1].to(device)
