@@ -22,7 +22,7 @@ else:
     PathModel= YoussefPathModel
     datapath = Youssefdatapath
 proportion_traindata = 0.8 # the proportion of the full dataset used for training
-printevery = 2000
+printevery = 200
 
 # %% Import Dataset and create trainloader 
 import datasetY as dataset
@@ -201,7 +201,7 @@ if train_or_not:
             break
         train_accuracy_list = np.concatenate((train_accuracy_list, np.array([test_accuracyv])))
         net.train()
-
+    import os
     print("Pickling accuracies...")
     file_name= PicklingPath+"accuracies"
     if os.path.exists(file_name):  # checking if there is a file with this name
@@ -213,6 +213,7 @@ if train_or_not:
     
     print('Finished Training')
     if save_trained_model:
+        import os
         if os.path.exists(PathModel):  # checking if there is a file with this name
             os.remove(PathModel)  # deleting the file
         torch.save(net.state_dict(), PathModel)
