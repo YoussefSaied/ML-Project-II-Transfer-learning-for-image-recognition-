@@ -28,7 +28,7 @@ printevery = 100
 import datasetY as dataset
 import torch
 import importlib
-from sampler import *
+from datasetY import BalancedBatchSampler, BalancedBatchSampler2, random_splitY, accuracy
 import itertools
 import numpy as np
 
