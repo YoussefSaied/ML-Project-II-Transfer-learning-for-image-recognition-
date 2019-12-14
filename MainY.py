@@ -22,7 +22,7 @@ else:
     PathModel= YoussefPathModel
     datapath = Youssefdatapath
 proportion_traindata = 0.8 # the proportion of the full dataset used for training
-printevery = 200
+printevery = 100
 
 # %% Import Dataset and create trainloader 
 import datasetY as dataset
@@ -50,7 +50,7 @@ indices, sets = random_splitY(full_dataset, [train_size, test_size])
 print(len(trainset))
 
 # Dataloaders
-batch_sizev=1 # 32>*>8
+batch_sizev=128 # 32>*>8
 test_batch_size = 1
 
 # trainset_labels = full_dataset.get_labels()[indices[:train_size]] 
@@ -59,13 +59,13 @@ test_batch_size = 1
 samplerv= BalancedBatchSampler2(trainset)
 samplertest = BalancedBatchSampler2(testset)
 
-trainloader = torch.utils.data.DataLoader(trainset , shuffle=False, batch_size= batch_sizev, num_workers=4)
-testloader = torch.utils.data.DataLoader(testset , shuffle =False, batch_size= test_batch_size, num_workers=4)
+trainloader = torch.utils.data.DataLoader(trainset , shuffle=True, batch_size= batch_sizev)
+testloader = torch.utils.data.DataLoader(testset , shuffle =True, batch_size= test_batch_size)
 ROCloader = torch.utils.data.DataLoader(testset,batch_size=1)
 # %% Import Neural network
 
-net = torch.hub.load('rwightman/gen-efficientnet-pytorch', 'efficientnet_b0',
- pretrained=True)
+net = torch.hub.load('rwightman/gen-efficientnet-pytorch', 'tf_mobilenetv3_small_minimal_100',
+ pretrained=False)
 
 # Change First and Last Layer
 net.conv_stem = torch.nn.Conv2d(4, 32, kernel_size=(3, 3), stride=(2, 2),
@@ -90,7 +90,7 @@ def convert_batch_to_instance(model):
         else:
             convert_batch_to_instance(child)
 
-convert_batch_to_instance(net)
+#convert_batch_to_instance(net)
 if not torch.cuda.is_available() : #ie if NOT on the server
     print(net)
 # %% Train Neural network
@@ -122,7 +122,7 @@ if use_saved_model:
     if os.path.isfile(PathModel):
         if os.stat(PathModel).st_size > 0:
             net.load_state_dict(torch.load(PathModel,map_location=torch.device(device   )))
-            convert_batch_to_instance(net)
+            #convert_batch_to_instance(net)
             print("Loading model...")
         else: 
             print("Empty file...")
