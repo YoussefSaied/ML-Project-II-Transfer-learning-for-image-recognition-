@@ -50,7 +50,7 @@ indices, sets = random_splitY(full_dataset, [train_size, test_size])
 print(len(trainset))
 
 # Dataloaders
-batch_sizev=64 # 32>*>8
+batch_sizev=1 # 32>*>8
 test_batch_size = 1
 
 # trainset_labels = full_dataset.get_labels()[indices[:train_size]] 
@@ -195,7 +195,7 @@ if train_or_not:
 
         # calculate and save accuracy and stop if test accuracy increases 
         #net.eval()
-        test_accuracyv = test_accuracy(net)
+        test_accuracyv =  ROC_accuracy(net)
         print("Test accuracy: %5f"%test_accuracyv)
         if test_accuracyv< np.min(train_accuracy_list) and False:
             break
@@ -223,7 +223,7 @@ if torch.cuda.is_available() : #ie if on the server
     #net.eval()
     test_accuracyv = test_accuracy(net)
     print("Test accuracy: %5f"%test_accuracyv)
-    train_accuracyv = train_accuracy(net)
+    train_accuracyv =  ROC_accuracy(net)
     print("Train accuracy: %5f"%train_accuracyv)
     import sys
     sys.exit()
