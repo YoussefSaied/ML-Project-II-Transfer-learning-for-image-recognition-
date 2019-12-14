@@ -10,7 +10,7 @@ YoussefPicklingPath = '/home/youssef/EPFL/MA1/Machine learning/MLProject2/ML2/Pr
 #Global variables:
 use_saved_model =0
 save_trained_model=1
-train_or_not =1
+train_or_not =0
 epochs =2
 OnServer =0
 if OnServer:
@@ -50,7 +50,7 @@ indices, sets = random_splitY(full_dataset, [train_size, test_size])
 print(len(trainset))
 
 # Dataloaders
-batch_sizev=128 # 32>*>8
+batch_sizev=32 # 32>*>8
 test_batch_size = 1
 
 # trainset_labels = full_dataset.get_labels()[indices[:train_size]] 
@@ -68,7 +68,7 @@ net = torch.hub.load('rwightman/gen-efficientnet-pytorch', 'tf_mobilenetv3_small
  pretrained=False)
 
 # Change First and Last Layer
-net.conv_stem = torch.nn.Conv2d(4, 16, kernel_size=(3, 3), stride=(2, 2), padding= (1,1) , bias=False)
+net.conv_stem.in_channels=4
 net.classifier = torch.nn.Linear(1024, 1)
 
 if torch.cuda.device_count() > 1 and False:
@@ -181,7 +181,8 @@ if train_or_not:
                         labels += testset_partial_labels.tolist()
                     else:
                         break
-
+            net.train()
+            
             file_name= PicklingPath+"PredictionsAndLabelsTrial1Epoch"+str(epoch)
             import os
             if os.path.exists(file_name):  # checking if there is a file with this name
@@ -193,13 +194,14 @@ if train_or_not:
             print("Pickling done...")
 
         # calculate and save accuracy and stop if test accuracy increases 
-        net.eval()
-        test_accuracyv =  ROC_accuracy(net)
-        print("Test accuracy: %5f"%test_accuracyv)
-        if test_accuracyv< np.min(train_accuracy_list) and False:
-            break
-        train_accuracy_list = np.concatenate((train_accuracy_list, np.array([test_accuracyv])))
-        net.train()
+        if epoch%2 ==0:
+            net.eval()
+            test_accuracyv =  ROC_accuracy(net)
+            print("Test accuracy: %5f"%test_accuracyv)
+            if test_accuracyv< np.min(train_accuracy_list) and False:
+                break
+            train_accuracy_list = np.concatenate((train_accuracy_list, np.array([test_accuracyv])))
+            net.train()
     import os
     print("Pickling accuracies...")
     file_name= PicklingPath+"accuracies"
