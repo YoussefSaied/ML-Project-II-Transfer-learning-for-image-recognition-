@@ -12,7 +12,7 @@ use_saved_model =0
 save_trained_model=1
 train_or_not =1
 epochs =2
-OnServer =1
+OnServer =0
 if OnServer:
     PicklingPath=YoussefServerPicklingPath
     PathModel= YoussefServerPathModel
@@ -68,9 +68,9 @@ net = torch.hub.load('rwightman/gen-efficientnet-pytorch', 'tf_mobilenetv3_small
  pretrained=False)
 
 # Change First and Last Layer
-net.conv_stem = torch.nn.Conv2d(4, 32, kernel_size=(3, 3), stride=(2, 2),
+net.conv_stem = torch.nn.Conv2dSame(4, 16, kernel_size=(3, 3), stride=(2, 2),
  padding=(1, 1), bias=False)
-net.classifier = torch.nn.Linear(1280, 1)
+net.classifier = torch.nn.Linear(1024, 1)
 
 if torch.cuda.device_count() > 1 and False:
     import torch.nn as nn
