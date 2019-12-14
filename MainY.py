@@ -11,7 +11,7 @@ YoussefPicklingPath = '/home/youssef/EPFL/MA1/Machine learning/MLProject2/ML2/Pr
 use_saved_model =0
 save_trained_model=1
 train_or_not =1
-epochs =2
+epochs =5
 OnServer =1
 if OnServer:
     PicklingPath=YoussefServerPicklingPath
@@ -22,7 +22,7 @@ else:
     PathModel= YoussefPathModel
     datapath = Youssefdatapath
 proportion_traindata = 0.8 # the proportion of the full dataset used for training
-printevery = 100
+printevery = 2000
 
 # %% Import Dataset and create trainloader 
 import datasetY as dataset
@@ -50,7 +50,7 @@ indices, sets = random_splitY(full_dataset, [train_size, test_size])
 print(len(trainset))
 
 # Dataloaders
-batch_sizev=128 # 32>*>8
+batch_sizev=8 # 32>*>8
 test_batch_size = 1
 
 # trainset_labels = full_dataset.get_labels()[indices[:train_size]] 
@@ -59,8 +59,8 @@ test_batch_size = 1
 samplerv= BalancedBatchSampler2(trainset)
 samplertest = BalancedBatchSampler2(testset)
 
-trainloader = torch.utils.data.DataLoader(trainset,sampler=samplerv , shuffle=False, batch_size= batch_sizev, num_workers=2)
-testloader = torch.utils.data.DataLoader(testset ,sampler = samplertest, shuffle =False, batch_size= test_batch_size, num_workers=2)
+trainloader = torch.utils.data.DataLoader(trainset,sampler=samplerv , shuffle=False, batch_size= batch_sizev, num_workers=1)
+testloader = torch.utils.data.DataLoader(testset ,sampler = samplertest, shuffle =False, batch_size= test_batch_size, num_workers=1)
 ROCloader = torch.utils.data.DataLoader(testset,batch_size=4)
 # %% Import Neural network
 
@@ -170,7 +170,7 @@ if train_or_not:
         
         # save predictions and labels for ROC curve calculation
         print("Saving predictions and calculating accuracies...")
-        net.eval()
+        #net.eval()
         predictions = []
         labels = []
         for k, testset_partial in enumerate(testloader):
@@ -193,7 +193,7 @@ if train_or_not:
         print("Pickling done...")
 
         # calculate and save accuracy and stop if test accuracy increases 
-        net.eval()
+        #net.eval()
         test_accuracyv = test_accuracy(net)
         print("Test accuracy: %5f"%test_accuracyv)
         if test_accuracyv< np.min(train_accuracy_list) and False:
@@ -218,7 +218,7 @@ if train_or_not:
         print("Saving model...")
 
 if torch.cuda.is_available() : #ie if on the server
-    net.eval()
+    #net.eval()
     test_accuracyv = test_accuracy(net)
     print("Test accuracy: %5f"%test_accuracyv)
     train_accuracyv = train_accuracy(net)
