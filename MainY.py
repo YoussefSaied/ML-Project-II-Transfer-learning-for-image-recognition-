@@ -2,8 +2,14 @@
 #Our variables:
 YoussefPathModel= '/home/youssef/EPFL/MA1/Machine learning/MLProject2/ML2/youssefServer4.modeldict'
 Youssefdatapath = '/home/youssef/EPFL/MA1/Machine learning/MLProject2/Data'
-YoussefServerPathModel= '/home/saied/ML/ML2/youssefServer6.modeldict'
-#Server 5 is init(Batchnorm), balanced, 128
+YoussefServerPathModel= '/home/saied/ML/ML2/youssefServer11.modeldict'
+#Server 5 is init(Batchnorm), not balanced, 128 auc=0.7 after 10 epochs 
+#Server 6 is init(Batchnorm), balanced, 128 auc=0.7/0.64 after 2/10 epochs
+#Server 7 is init(Batchnorm), balanced, 8 auc=0.74/0.7 after 1/5 epochs (best)
+#Server 9 is init(Batchnorm), balanced, 4 auc=?? after 1/5 epochs 
+#Server 8 is init(Batchnorm), balanced, 128, weightdecay =0.0001 auc =0.64 after 4 epochs 
+#Server 10 is SIMPLE is init(Batchnorm), balanced, 8 auc=?? after ?? epochs
+#Server 11 is init(Batchnorm), not balanced, 8 auc= ?? after ?? epochs
 YoussefServerdatapath = '/data/mgeiger/gg2/data'
 YoussefServerPicklingPath = '/home/saied/ML/ML2/'
 YoussefPicklingPath = '/home/youssef/EPFL/MA1/Machine learning/MLProject2/ML2/Predictions/'
@@ -13,7 +19,7 @@ YoussefServerPathDataset= '/home/saied/ML/ML2/traintestsets.pckl'
 use_saved_model =0
 save_trained_model=1
 train_or_not =1
-epochs =10
+epochs =5
 OnServer =1
 if OnServer:
     PicklingPath=YoussefServerPicklingPath
@@ -26,7 +32,7 @@ else:
     PathDataset =YoussefPathDataset
     datapath = Youssefdatapath
 proportion_traindata = 0.8 # the proportion of the full dataset used for training
-printevery = 100
+printevery = 2000
 
 # %% Import Dataset and create trainloader 
 import datasetY as dataset
@@ -69,7 +75,7 @@ else:
 print(len(trainset))
 
 # Dataloaders
-batch_sizev=128 # 32>*>8
+batch_sizev=8 # 32>*>8
 test_batch_size = 1
 
 # trainset_labels = full_dataset.get_labels()[indices[:train_size]] 
@@ -78,7 +84,7 @@ test_batch_size = 1
 samplerv= BalancedBatchSampler2(trainset)
 samplertest = BalancedBatchSampler2(testset)
 
-trainloader = torch.utils.data.DataLoader(trainset, sampler=samplerv, shuffle=True, batch_size= batch_sizev)
+trainloader = torch.utils.data.DataLoader(trainset, sampler=None, shuffle=False, batch_size= batch_sizev)
 testloader = torch.utils.data.DataLoader(testset, sampler=None, shuffle =True, batch_size= test_batch_size)
 ROCloader = torch.utils.data.DataLoader(testset,batch_size=1)
 # %% Import Neural network
@@ -173,7 +179,7 @@ if use_saved_model:
 #Training starts
 
 criterion = nn.SoftMarginLoss()
-optimizer = optim.SGD(net.parameters(), lr=lrv, momentum=momentumv)
+optimizer = optim.SGD(net.parameters(), lr=lrv, momentum=momentumv, weight_decay=0.0001)
 
 net.train()
 
@@ -263,7 +269,14 @@ if train_or_not:
                 auc = metrics.roc_auc_score(labels, predictions)
                 print("Test auc: %5f"%auc)
                 train_accuracy_list = np.concatenate((train_accuracy_list, np.array([auc])))
+                for k, trainset_partial in enumerate(trainloader):
+                    if k <100:
+                        trainset_partial_I , trainset_partial_labels = testset_partial[0].to(device), testset_partial[1].to(device)
+                        predictions += [p.item() for p in net(testset_partial_I) ]
+                        labels += testset_partial_labels.tolist()
 
+                auc = metrics.roc_auc_score(labels, predictions)
+                print("Train auc: %5f"%auc)
         net.train()
             
     import os
