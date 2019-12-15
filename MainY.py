@@ -250,6 +250,7 @@ if train_or_not:
 
 
         # AUC for ROC curve
+        net.eval()
         from sklearn import metrics
         predictions = []
         labels = []
@@ -264,6 +265,8 @@ if train_or_not:
                 auc = metrics.roc_auc_score(labels, predictions)
                 print("Train auc: %5f"%auc)
                 train_accuracy_list = np.concatenate((train_accuracy_list, np.array([auc])))
+
+         net.train()
             
     import os
     print("Pickling accuracies...")
