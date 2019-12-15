@@ -49,6 +49,7 @@ if os.path.isfile(PathDataset):
         import pickle
         with open(PathDataset, 'rb') as pickle_file:
             [full_dataset,trainset,testset] = pickle.load(pickle_file)
+        print("Loading datasets...")
 else: 
     full_dataset = dataset.GG2(datapath,data_augmentation=False)
 
@@ -61,6 +62,8 @@ else:
     import pickle
     with open(PathDataset, 'wb') as pickle_file:
         pickle.dump([full_dataset,trainset,testset],pickle_file)
+    print("Creating and pickling datasets...")
+
 
 
 
