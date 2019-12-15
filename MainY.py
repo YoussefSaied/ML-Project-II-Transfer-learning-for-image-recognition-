@@ -2,13 +2,13 @@
 #Our variables:
 YoussefPathModel= '/home/youssef/EPFL/MA1/Machine learning/MLProject2/ML2/youssefServer4.modeldict'
 Youssefdatapath = '/home/youssef/EPFL/MA1/Machine learning/MLProject2/Data'
-YoussefServerPathModel= '/home/saied/ML/ML2/youssefServer11.modeldict'
+YoussefServerPathModel= '/home/saied/ML/ML2/youssefServer10.modeldict'
 #Server 5 is init(Batchnorm), not balanced, 128 auc=0.7 after 10 epochs 
 #Server 6 is init(Batchnorm), balanced, 128 auc=0.7/0.64 after 2/10 epochs
 #Server 7 is init(Batchnorm), balanced, 8 auc=0.74/0.7 after 1/5 epochs (best)
 #Server 9 is init(Batchnorm), balanced, 4 auc=?? after 1/5 epochs 
 #Server 8 is init(Batchnorm), balanced, 128, weightdecay =0.0001 auc =0.64 after 4 epochs 
-#Server 10 is SIMPLE is init(Batchnorm), balanced, 8 auc=?? after ?? epochs
+#Server 10 is SIMPLE is init(Batchnorm), not balanced, 8 auc=?? after ?? epochs
 #Server 11 is init(Batchnorm), not balanced, 8 auc= ?? after ?? epochs
 YoussefServerdatapath = '/data/mgeiger/gg2/data'
 YoussefServerPicklingPath = '/home/saied/ML/ML2/'
@@ -33,6 +33,8 @@ else:
     datapath = Youssefdatapath
 proportion_traindata = 0.8 # the proportion of the full dataset used for training
 printevery = 2000
+
+print("Server10")
 
 # %% Import Dataset and create trainloader 
 import datasetY as dataset
@@ -88,14 +90,14 @@ trainloader = torch.utils.data.DataLoader(trainset, sampler=None, shuffle=False,
 testloader = torch.utils.data.DataLoader(testset, sampler=None, shuffle =True, batch_size= test_batch_size)
 ROCloader = torch.utils.data.DataLoader(testset,batch_size=1)
 # %% Import Neural network
-if False:
+if True:
     net = torch.hub.load('rwightman/gen-efficientnet-pytorch', 'tf_mobilenetv3_small_minimal_100',
     pretrained=False)
 
     # Change First and Last Layer
     net.conv_stem = torch.nn.Conv2d(4,16,kernel_size=(2,2),bias=False)
     net.classifier = torch.nn.Linear(1024, 1)
-if True: 
+if False: 
     net = torch.hub.load('rwightman/gen-efficientnet-pytorch', 'efficientnet_b0',
     pretrained=True)
 
