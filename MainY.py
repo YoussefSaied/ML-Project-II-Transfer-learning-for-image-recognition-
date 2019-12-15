@@ -6,20 +6,23 @@ YoussefServerPathModel= '/home/saied/ML/ML2/youssefServer5.modeldict'
 YoussefServerdatapath = '/data/mgeiger/gg2/data'
 YoussefServerPicklingPath = '/home/saied/ML/ML2/'
 YoussefPicklingPath = '/home/youssef/EPFL/MA1/Machine learning/MLProject2/ML2/Predictions/'
-
+YoussefPathDataset= '/home/youssef/EPFL/MA1/Machine learning/MLProject2/traintestsets.pckl'
+YoussefServerPathDataset= '/home/saied/ML/ML2/traintestsets.pckl'
 #Global variables:
 use_saved_model =0
 save_trained_model=1
 train_or_not =1
-epochs =5
+epochs =20
 OnServer =1
 if OnServer:
     PicklingPath=YoussefServerPicklingPath
     PathModel= YoussefServerPathModel
+    PathDataset =YoussefServerPathDataset
     datapath = YoussefServerdatapath
 else:
     PicklingPath=YoussefPicklingPath
     PathModel= YoussefPathModel
+    PathDataset =YoussefPathDataset
     datapath = Youssefdatapath
 proportion_traindata = 0.8 # the proportion of the full dataset used for training
 printevery = 100
@@ -36,17 +39,35 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 #importlib.reload(module)
 
 
-full_dataset = dataset.GG2(datapath)
-
-train_size = int(proportion_traindata * len(full_dataset))
-test_size = len(full_dataset) - train_size
 
 
+# Pickling datasets
 
-# To split the full_dataset
+import os
+if os.path.isfile(PathDataset):
+    if os.stat(PathDataset).st_size > 0:
+        import pickle
+        with open(PathDataset, 'rb') as pickle_file:
+            [full_dataset,trainset,testset] = pickle.load(pickle_file)
+else: 
+    full_dataset = dataset.GG2(datapath,data_augmentation=False)
+    
+    # To split the full_dataset
+    train_size = int(proportion_traindata * len(full_dataset))
+    test_size = len(full_dataset) - train_size
+    indices, sets = random_splitY(full_dataset, [train_size, test_size])
+    [trainset, testset]=sets
 
-indices, sets = random_splitY(full_dataset, [train_size, test_size])
-[trainset, testset]=sets
+    import pickle
+    with open(PathDataset, 'wb') as pickle_file:
+        pickle.dump([full_dataset,trainset,testset],pickle_file)
+
+
+
+
+
+
+
 print(len(trainset))
 
 # Dataloaders
@@ -59,17 +80,27 @@ test_batch_size = 1
 samplerv= BalancedBatchSampler2(trainset)
 samplertest = BalancedBatchSampler2(testset)
 
-trainloader = torch.utils.data.DataLoader(trainset, sampler=samplerv, shuffle=True, batch_size= batch_sizev)
-testloader = torch.utils.data.DataLoader(testset, shuffle =True, batch_size= test_batch_size)
+trainloader = torch.utils.data.DataLoader(trainset, sampler=None, shuffle=True, batch_size= batch_sizev)
+testloader = torch.utils.data.DataLoader(testset, sampler=None, shuffle =True, batch_size= test_batch_size)
 ROCloader = torch.utils.data.DataLoader(testset,batch_size=1)
 # %% Import Neural network
+if False:
+    net = torch.hub.load('rwightman/gen-efficientnet-pytorch', 'tf_mobilenetv3_small_minimal_100',
+    pretrained=False)
 
-net = torch.hub.load('rwightman/gen-efficientnet-pytorch', 'tf_mobilenetv3_small_minimal_100',
- pretrained=False)
+    # Change First and Last Layer
+    net.conv_stem = torch.nn.Conv2d(4,16,kernel_size=(2,2),bias=False)
+    net.classifier = torch.nn.Linear(1024, 1)
+if True: 
+    net = torch.hub.load('rwightman/gen-efficientnet-pytorch', 'efficientnet_b0',
+    pretrained=True)
 
-# Change First and Last Layer
-net.conv_stem = torch.nn.Conv2d(4,16,kernel_size=(2,2),bias=False)
-net.classifier = torch.nn.Linear(1024, 1)
+    # Change First and Last Layer
+    net.conv_stem = torch.nn.Conv2d(4, 32, kernel_size=(3, 3), stride=(2, 2),
+    padding=(1, 1), bias=False)
+    net.classifier = torch.nn.Linear(1280, 1)
+
+
 
 if torch.cuda.device_count() > 1 and False:
     import torch.nn as nn
@@ -89,7 +120,19 @@ def convert_batch_to_instance(model):
         else:
             convert_batch_to_instance(child)
 
+
+def init_batchnorm(model):
+    import torch.nn as nn
+    for child_name, child in model.named_children():
+        if isinstance(child, nn.BatchNorm2d):
+            num_features= child.num_features
+            setattr(model, child_name, nn.BatchNorm2d(num_features=num_features))
+        else:
+            convert_batch_to_instance(child)
+
 #convert_batch_to_instance(net)
+
+init_batchnorm(net)
 if not torch.cuda.is_available() : #ie if NOT on the server
     print(net)
 # %% Train Neural network
@@ -194,14 +237,32 @@ if train_or_not:
             print("Pickling done...")
 
         # calculate and save accuracy and stop if test accuracy increases 
-        if epoch%2 ==0:
-            net.eval()
-            test_accuracyv =  ROC_accuracy(net)
-            print("Test accuracy: %5f"%test_accuracyv)
-            if test_accuracyv< np.min(train_accuracy_list) and False:
-                break
-            train_accuracy_list = np.concatenate((train_accuracy_list, np.array([test_accuracyv])))
-            net.train()
+            if epoch%2 ==0:
+                net.eval()
+                test_accuracyv =  ROC_accuracy(net)
+                print("Test accuracy: %5f"%test_accuracyv)
+                if test_accuracyv< np.min(train_accuracy_list) and False:
+                    break
+                train_accuracy_list = np.concatenate((train_accuracy_list, np.array([test_accuracyv])))
+                net.train()
+
+
+        # AUC for ROC curve
+        from sklearn import metrics
+        predictions = []
+        labels = []
+        with torch.no_grad():
+            if True:
+                for k, testset_partial in enumerate(testloader):
+                    if k <100000:
+                        testset_partial_I , testset_partial_labels = testset_partial[0].to(device), testset_partial[1].to(device)
+                        predictions += [p.item() for p in net(testset_partial_I) ]
+                        labels += testset_partial_labels.tolist()
+
+                auc = metrics.roc_auc_score(labels, predictions)
+                print("Train auc: %5f"%auc)
+                train_accuracy_list = np.concatenate((train_accuracy_list, np.array([auc])))
+            
     import os
     print("Pickling accuracies...")
     file_name= PicklingPath+"accuracies"
@@ -311,17 +372,4 @@ with torch.no_grad():
         
         # function to show the plot 
         plt.show()
-
-
-# %% Optimisation of hyperparameters
-
-import numpy as np
-
-listOfBatchSizes = [8,16,24,32]
-listOflr = np.logspace(-6,-1, num=10)
-
-for i,lr, batchSize in enumerate( zip(listOflr,listOfBatchSizes)):
-    print('starting test number %5d'%i)
-    #pseudo: initialise net? train, save results and net, finaly return best
-    
 
