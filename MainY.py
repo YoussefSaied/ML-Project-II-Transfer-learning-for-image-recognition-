@@ -266,7 +266,7 @@ if train_or_not:
                 print("Train auc: %5f"%auc)
                 train_accuracy_list = np.concatenate((train_accuracy_list, np.array([auc])))
 
-         net.train()
+        net.train()
             
     import os
     print("Pickling accuracies...")
