@@ -51,7 +51,7 @@ if os.path.isfile(PathDataset):
             [full_dataset,trainset,testset] = pickle.load(pickle_file)
 else: 
     full_dataset = dataset.GG2(datapath,data_augmentation=False)
-    
+
     # To split the full_dataset
     train_size = int(proportion_traindata * len(full_dataset))
     test_size = len(full_dataset) - train_size
@@ -107,6 +107,7 @@ if torch.cuda.device_count() > 1 and False:
     print("Let's use", torch.cuda.device_count(), "GPUs!")
     model = nn.DataParallel(model)
 net.to(device)
+
 if not torch.cuda.is_available() : #ie if NOT on the server
     print(net)
 
@@ -133,6 +134,7 @@ def init_batchnorm(model):
 #convert_batch_to_instance(net)
 
 init_batchnorm(net)
+net.to(device)
 if not torch.cuda.is_available() : #ie if NOT on the server
     print(net)
 # %% Train Neural network
