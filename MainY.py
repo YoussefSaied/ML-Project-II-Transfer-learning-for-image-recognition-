@@ -5,14 +5,15 @@ Youssefdatapath = '/home/youssef/EPFL/MA1/Machine learning/MLProject2/Data' # Pa
 YoussefServerPathModel= '/home/saied/ML/ML2/youssefServer14.modeldict' # Path of weights of the Model
 #Server 5 is init(Batchnorm), not balanced, 128 auc=0.7 after 10 epochs 
 #Server 6 is init(Batchnorm), balanced, 128 auc=0.7/0.64 after 2/10 epochs
-#Server 7 is init(Batchnorm), balanced, 8 auc=0.74/0.7 after 1/5 epochs (best)
+#Server 7 is init(Batchnorm), balanced, 8 auc=0.74/0.7 after 1/5 epochs
 #Server 9 is init(Batchnorm), balanced, 4 auc=0.74 after 1/5 epochs 
 #Server 8 is init(Batchnorm), balanced, 128, weightdecay =0.0001 auc =0.64 after 4 epochs 
 #Server 10 is SIMPLE is init(Batchnorm), not balanced, 8 auc=0.65/0.7 after 5/15 epochs (redo)
 #Server 11 is init(Batchnorm), not balanced, 8 auc= 0.72 after 1 epochs
-#Server 12 is Data augmented, init(Batchnorm), balanced, 8 auc=??/?? after ??/?? epochs (best?)
+#Server 12 is Data augmented, init(Batchnorm), balanced, 8 auc=0.8/?? after 10/?? epochs (best) (redo decrease weight decay)
 #Server 13 is Data augmented, init(Batchnorm), balanced, 128 auc=??/?? after ??/?? epochs (best?)
 #Server 14 is Data augmented, SIMPLE, init(Batchnorm), balanced, 128 auc=??/?? after ??/?? epochs
+#Server 15 is Data augmented, SIMPLE, init(Batchnorm), balanced, 8 auc=??/?? after ??/?? epochs
 YoussefServerdatapath = '/data/mgeiger/gg2/data' # Path of data
 YoussefServerPicklingPath = '/home/saied/ML/ML2/' # Path for pickling 
 YoussefPicklingPath = '/home/youssef/EPFL/MA1/Machine learning/MLProject2/ML2/Predictions/' # Path for pickling 
@@ -20,12 +21,12 @@ YoussefPathDataset= '/home/youssef/EPFL/MA1/Machine learning/MLProject2/traintes
 YoussefServerPathDataset= '/home/saied/ML/ML2/traintestsets.pckl' # Path of training and test dataset
 
 #Global variables (booleans):
-simple =1
+simple =0
 data_augmentation =1
-use_saved_model =0
+use_saved_model =1
 save_trained_model=1
 train_or_not =1
-epochs =15
+epochs =5
 OnServer =1
 if OnServer:
     PicklingPath=YoussefServerPicklingPath
@@ -38,9 +39,9 @@ else:
     PathDataset =YoussefPathDataset
     datapath = Youssefdatapath
 proportion_traindata = 0.8 # the proportion of the full dataset used for training
-printevery = 200
+printevery = 2000
 
-print("Server14")
+print("Server12")
 
 # %% Import Dataset and create trainloader 
 import datasetY as dataset
@@ -90,7 +91,7 @@ print(len(trainset))
 
 # Dataloaders
 
-batch_sizev=128
+batch_sizev=8
 test_batch_size = 1
 
 
@@ -192,7 +193,7 @@ if use_saved_model:
 #Training starts
 
 criterion = nn.SoftMarginLoss()
-optimizer = optim.SGD(net.parameters(), lr=lrv, momentum=momentumv, weight_decay=0.0001)
+optimizer = optim.SGD(net.parameters(), lr=lrv, momentum=momentumv,weight_decay=0.00001)
 
 net.train()
 
