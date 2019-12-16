@@ -1,22 +1,25 @@
 # %% Global parameters
 #Our variables:
-YoussefPathModel= '/home/youssef/EPFL/MA1/Machine learning/MLProject2/ML2/youssefServer4.modeldict'
-Youssefdatapath = '/home/youssef/EPFL/MA1/Machine learning/MLProject2/Data'
-YoussefServerPathModel= '/home/saied/ML/ML2/youssefServer12.modeldict'
+YoussefPathModel= '/home/youssef/EPFL/MA1/Machine learning/MLProject2/ML2/youssefServer4.modeldict' # Path of the weights of the model
+Youssefdatapath = '/home/youssef/EPFL/MA1/Machine learning/MLProject2/Data' # Path of data
+YoussefServerPathModel= '/home/saied/ML/ML2/youssefServer13.modeldict' # Path of weights of the Model
 #Server 5 is init(Batchnorm), not balanced, 128 auc=0.7 after 10 epochs 
 #Server 6 is init(Batchnorm), balanced, 128 auc=0.7/0.64 after 2/10 epochs
 #Server 7 is init(Batchnorm), balanced, 8 auc=0.74/0.7 after 1/5 epochs (best)
 #Server 9 is init(Batchnorm), balanced, 4 auc=0.74 after 1/5 epochs 
 #Server 8 is init(Batchnorm), balanced, 128, weightdecay =0.0001 auc =0.64 after 4 epochs 
-#Server 10 is SIMPLE is init(Batchnorm), not balanced, 8 auc=0.65 after 5 epochs
-#Server 11 is init(Batchnorm), not balanced, 8 auc= ?? after ?? epochs
+#Server 10 is SIMPLE is init(Batchnorm), not balanced, 8 auc=0.65/0.7 after 5/15 epochs (redo)
+#Server 11 is init(Batchnorm), not balanced, 8 auc= 0.72 after 1 epochs
 #Server 12 is Data augmented, init(Batchnorm), balanced, 8 auc=??/?? after ??/?? epochs (best?)
-YoussefServerdatapath = '/data/mgeiger/gg2/data'
-YoussefServerPicklingPath = '/home/saied/ML/ML2/'
-YoussefPicklingPath = '/home/youssef/EPFL/MA1/Machine learning/MLProject2/ML2/Predictions/'
-YoussefPathDataset= '/home/youssef/EPFL/MA1/Machine learning/MLProject2/traintestsets.pckl'
-YoussefServerPathDataset= '/home/saied/ML/ML2/traintestsets.pckl'
-#Global variables:
+#Server 13 is Data augmented, init(Batchnorm), balanced, 128 auc=??/?? after ??/?? epochs (best?)
+#Server 14 is Data augmented, SIMPLE, init(Batchnorm), balanced, 8 auc=??/?? after ??/?? epochs
+YoussefServerdatapath = '/data/mgeiger/gg2/data' # Path of data
+YoussefServerPicklingPath = '/home/saied/ML/ML2/' # Path for pickling 
+YoussefPicklingPath = '/home/youssef/EPFL/MA1/Machine learning/MLProject2/ML2/Predictions/' # Path for pickling 
+YoussefPathDataset= '/home/youssef/EPFL/MA1/Machine learning/MLProject2/traintestsets.pckl' # Path of training and test dataset
+YoussefServerPathDataset= '/home/saied/ML/ML2/traintestsets.pckl' # Path of training and test dataset
+
+#Global variables (booleans):
 data_augmentation =1
 use_saved_model =0
 save_trained_model=1
@@ -34,9 +37,9 @@ else:
     PathDataset =YoussefPathDataset
     datapath = Youssefdatapath
 proportion_traindata = 0.8 # the proportion of the full dataset used for training
-printevery = 2000
+printevery = 200
 
-print("Server12")
+print("Server13")
 
 # %% Import Dataset and create trainloader 
 import datasetY as dataset
@@ -85,11 +88,10 @@ if data_augmentation:
 print(len(trainset))
 
 # Dataloaders
-batch_sizev=8 # 32>*>8
+
+batch_sizev=128
 test_batch_size = 1
 
-# trainset_labels = full_dataset.get_labels()[indices[:train_size]] 
-# testset_labels= full_dataset.get_labels()[indices[train_size:]] 
 
 samplerv= BalancedBatchSampler2(trainset)
 samplertest = BalancedBatchSampler2(testset)
@@ -136,7 +138,7 @@ def convert_batch_to_instance(model):
             convert_batch_to_instance(child)
 
 
-def init_batchnorm(model):
+def init_batchnorm(model): # For initializing the batch normalization layers
     import torch.nn as nn
     for child_name, child in model.named_children():
         if isinstance(child, nn.BatchNorm2d):
