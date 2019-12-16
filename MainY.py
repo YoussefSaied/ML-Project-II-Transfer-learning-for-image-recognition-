@@ -2,7 +2,7 @@
 #Our variables:
 YoussefPathModel= '/home/youssef/EPFL/MA1/Machine learning/MLProject2/ML2/youssefServer4.modeldict' # Path of the weights of the model
 Youssefdatapath = '/home/youssef/EPFL/MA1/Machine learning/MLProject2/Data' # Path of data
-YoussefServerPathModel= '/home/saied/ML/ML2/youssefServer13.modeldict' # Path of weights of the Model
+YoussefServerPathModel= '/home/saied/ML/ML2/youssefServer14.modeldict' # Path of weights of the Model
 #Server 5 is init(Batchnorm), not balanced, 128 auc=0.7 after 10 epochs 
 #Server 6 is init(Batchnorm), balanced, 128 auc=0.7/0.64 after 2/10 epochs
 #Server 7 is init(Batchnorm), balanced, 8 auc=0.74/0.7 after 1/5 epochs (best)
@@ -12,7 +12,7 @@ YoussefServerPathModel= '/home/saied/ML/ML2/youssefServer13.modeldict' # Path of
 #Server 11 is init(Batchnorm), not balanced, 8 auc= 0.72 after 1 epochs
 #Server 12 is Data augmented, init(Batchnorm), balanced, 8 auc=??/?? after ??/?? epochs (best?)
 #Server 13 is Data augmented, init(Batchnorm), balanced, 128 auc=??/?? after ??/?? epochs (best?)
-#Server 14 is Data augmented, SIMPLE, init(Batchnorm), balanced, 8 auc=??/?? after ??/?? epochs
+#Server 14 is Data augmented, SIMPLE, init(Batchnorm), balanced, 128 auc=??/?? after ??/?? epochs
 YoussefServerdatapath = '/data/mgeiger/gg2/data' # Path of data
 YoussefServerPicklingPath = '/home/saied/ML/ML2/' # Path for pickling 
 YoussefPicklingPath = '/home/youssef/EPFL/MA1/Machine learning/MLProject2/ML2/Predictions/' # Path for pickling 
@@ -20,6 +20,7 @@ YoussefPathDataset= '/home/youssef/EPFL/MA1/Machine learning/MLProject2/traintes
 YoussefServerPathDataset= '/home/saied/ML/ML2/traintestsets.pckl' # Path of training and test dataset
 
 #Global variables (booleans):
+simple =1
 data_augmentation =1
 use_saved_model =0
 save_trained_model=1
@@ -39,7 +40,7 @@ else:
 proportion_traindata = 0.8 # the proportion of the full dataset used for training
 printevery = 200
 
-print("Server13")
+print("Server14")
 
 # %% Import Dataset and create trainloader 
 import datasetY as dataset
@@ -100,14 +101,14 @@ trainloader = torch.utils.data.DataLoader(trainset, sampler=samplerv, shuffle=Fa
 testloader = torch.utils.data.DataLoader(testset, sampler=None, shuffle =True, batch_size= test_batch_size)
 ROCloader = torch.utils.data.DataLoader(testset,batch_size=1)
 # %% Import Neural network
-if False:
+if simple:
     net = torch.hub.load('rwightman/gen-efficientnet-pytorch', 'tf_mobilenetv3_small_minimal_100',
     pretrained=False)
 
     # Change First and Last Layer
     net.conv_stem = torch.nn.Conv2d(4,16,kernel_size=(2,2),bias=False)
     net.classifier = torch.nn.Linear(1024, 1)
-if True: 
+else: 
     net = torch.hub.load('rwightman/gen-efficientnet-pytorch', 'efficientnet_b0',
     pretrained=True)
 
