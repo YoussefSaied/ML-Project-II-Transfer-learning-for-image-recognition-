@@ -16,6 +16,7 @@ except:
 import torch.utils.data
 import random
 import itertools
+import numpy as np
 
 
 def load_GG2_images2(images):

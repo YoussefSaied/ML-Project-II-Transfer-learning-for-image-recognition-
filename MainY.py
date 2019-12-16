@@ -2,7 +2,7 @@
 #Our variables:
 YoussefPathModel= '/home/youssef/EPFL/MA1/Machine learning/MLProject2/ML2/youssefServer4.modeldict'
 Youssefdatapath = '/home/youssef/EPFL/MA1/Machine learning/MLProject2/Data'
-YoussefServerPathModel= '/home/saied/ML/ML2/youssefServer10.modeldict'
+YoussefServerPathModel= '/home/saied/ML/ML2/youssefServer12.modeldict'
 #Server 5 is init(Batchnorm), not balanced, 128 auc=0.7 after 10 epochs 
 #Server 6 is init(Batchnorm), balanced, 128 auc=0.7/0.64 after 2/10 epochs
 #Server 7 is init(Batchnorm), balanced, 8 auc=0.74/0.7 after 1/5 epochs (best)
@@ -36,7 +36,7 @@ else:
 proportion_traindata = 0.8 # the proportion of the full dataset used for training
 printevery = 2000
 
-print("Server10")
+print("Server12")
 
 # %% Import Dataset and create trainloader 
 import datasetY as dataset
