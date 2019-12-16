@@ -6,20 +6,22 @@ YoussefServerPathModel= '/home/saied/ML/ML2/youssefServer10.modeldict'
 #Server 5 is init(Batchnorm), not balanced, 128 auc=0.7 after 10 epochs 
 #Server 6 is init(Batchnorm), balanced, 128 auc=0.7/0.64 after 2/10 epochs
 #Server 7 is init(Batchnorm), balanced, 8 auc=0.74/0.7 after 1/5 epochs (best)
-#Server 9 is init(Batchnorm), balanced, 4 auc=?? after 1/5 epochs 
+#Server 9 is init(Batchnorm), balanced, 4 auc=0.74 after 1/5 epochs 
 #Server 8 is init(Batchnorm), balanced, 128, weightdecay =0.0001 auc =0.64 after 4 epochs 
-#Server 10 is SIMPLE is init(Batchnorm), not balanced, 8 auc=?? after ?? epochs
+#Server 10 is SIMPLE is init(Batchnorm), not balanced, 8 auc=0.65 after 5 epochs
 #Server 11 is init(Batchnorm), not balanced, 8 auc= ?? after ?? epochs
+#Server 12 is Data augmented, init(Batchnorm), balanced, 8 auc=??/?? after ??/?? epochs (best?)
 YoussefServerdatapath = '/data/mgeiger/gg2/data'
 YoussefServerPicklingPath = '/home/saied/ML/ML2/'
 YoussefPicklingPath = '/home/youssef/EPFL/MA1/Machine learning/MLProject2/ML2/Predictions/'
 YoussefPathDataset= '/home/youssef/EPFL/MA1/Machine learning/MLProject2/traintestsets.pckl'
 YoussefServerPathDataset= '/home/saied/ML/ML2/traintestsets.pckl'
 #Global variables:
+data_augmentation =1
 use_saved_model =0
 save_trained_model=1
 train_or_not =1
-epochs =5
+epochs =15
 OnServer =1
 if OnServer:
     PicklingPath=YoussefServerPicklingPath
@@ -73,6 +75,12 @@ else:
         pickle.dump([full_dataset,trainset,testset],pickle_file)
     print("Creating and pickling datasets...")
 
+# Data augmentation
+
+if data_augmentation:
+    full_dataset.data_augmentation=True
+    trainset.data_augmentation=True
+    testset.data_augmentation=True
 
 print(len(trainset))
 
@@ -86,18 +94,18 @@ test_batch_size = 1
 samplerv= BalancedBatchSampler2(trainset)
 samplertest = BalancedBatchSampler2(testset)
 
-trainloader = torch.utils.data.DataLoader(trainset, sampler=None, shuffle=False, batch_size= batch_sizev)
+trainloader = torch.utils.data.DataLoader(trainset, sampler=samplerv, shuffle=False, batch_size= batch_sizev)
 testloader = torch.utils.data.DataLoader(testset, sampler=None, shuffle =True, batch_size= test_batch_size)
 ROCloader = torch.utils.data.DataLoader(testset,batch_size=1)
 # %% Import Neural network
-if True:
+if False:
     net = torch.hub.load('rwightman/gen-efficientnet-pytorch', 'tf_mobilenetv3_small_minimal_100',
     pretrained=False)
 
     # Change First and Last Layer
     net.conv_stem = torch.nn.Conv2d(4,16,kernel_size=(2,2),bias=False)
     net.classifier = torch.nn.Linear(1024, 1)
-if False: 
+if True: 
     net = torch.hub.load('rwightman/gen-efficientnet-pytorch', 'efficientnet_b0',
     pretrained=True)
 
