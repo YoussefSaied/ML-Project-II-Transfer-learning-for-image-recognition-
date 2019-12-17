@@ -156,7 +156,7 @@ print("There are", torch.cuda.device_count(), "GPUs!")
 if torch.cuda.device_count() > 1 and use_parallelization:
     import torch.nn as nn
     print("Let's use", torch.cuda.device_count(), "GPUs!")
-    model = nn.DataParallel(model)
+    net = nn.DataParallel(net)
 net.to(device)
 
 if not torch.cuda.is_available() : #ie if NOT on the server
