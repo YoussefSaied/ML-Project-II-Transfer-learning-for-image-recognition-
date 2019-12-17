@@ -28,7 +28,7 @@ data_augmentation =1
 use_saved_model =1
 save_trained_model=1
 train_or_not =1
-epochs =15
+epochs =1
 OnServer =1
 if OnServer:
     PicklingPath=YoussefServerPicklingPath
@@ -163,7 +163,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 momentumv=0.90
-lrv=0.05
+lrv=0.001
+
+print("Learning rate= "+str(lrv))
 
 
 # To calculate accuracy
@@ -278,6 +280,7 @@ if train_or_not:
 
 
         # AUC for ROC curve
+        
         net.eval()
         from sklearn import metrics
         predictions = []
@@ -292,15 +295,16 @@ if train_or_not:
 
                 auc = metrics.roc_auc_score(labels, predictions)
                 print("Test auc: %5f"%auc)
-                train_accuracy_list = np.concatenate((train_accuracy_list, np.array([auc])))
-                for k, trainset_partial in enumerate(trainloader):
-                    if k <100:
-                        trainset_partial_I , trainset_partial_labels = testset_partial[0].to(device), testset_partial[1].to(device)
-                        predictions += [p.item() for p in net(testset_partial_I) ]
-                        labels += testset_partial_labels.tolist()
+                #train_accuracy_list = np.concatenate((train_accuracy_list, np.array([auc])))
+                if False:
+                    for k, trainset_partial in enumerate(trainloader):
+                        if k <100:
+                            trainset_partial_I , trainset_partial_labels = testset_partial[0].to(device), testset_partial[1].to(device)
+                            predictions += [p.item() for p in net(testset_partial_I) ]
+                            labels += testset_partial_labels.tolist()
 
-                auc = metrics.roc_auc_score(labels, predictions)
-                print("Train auc: %5f"%auc)
+                    auc = metrics.roc_auc_score(labels, predictions)
+                    print("Train auc: %5f"%auc)
         net.train()
             
     import os
