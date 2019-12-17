@@ -151,6 +151,8 @@ def init_batchnorm(model): # For initializing the batch normalization layers
 
 init_batchnorm(net)
 net.to(device)
+
+print("There are", torch.cuda.device_count(), "GPUs!")
 if torch.cuda.device_count() > 1 and use_parallelization:
     import torch.nn as nn
     print("Let's use", torch.cuda.device_count(), "GPUs!")
