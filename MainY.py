@@ -28,7 +28,7 @@ data_augmentation =1
 use_saved_model =1
 save_trained_model=1
 train_or_not =1
-epochs =1
+epochs =3
 OnServer =1
 if OnServer:
     PicklingPath=YoussefServerPicklingPath
@@ -171,7 +171,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 momentumv=0.90
-lrv=0.0001
+lrv=0.01
 
 print("Learning rate= "+str(lrv))
 
