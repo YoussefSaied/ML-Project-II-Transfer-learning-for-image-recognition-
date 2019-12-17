@@ -2,7 +2,7 @@
 #Our variables:
 YoussefPathModel= '/home/youssef/EPFL/MA1/Machine learning/MLProject2/ML2/youssefServer4.modeldict' # Path of the weights of the model
 Youssefdatapath = '/home/youssef/EPFL/MA1/Machine learning/MLProject2/Data' # Path of data
-YoussefServerPathModel= '/home/saied/ML/ML2/youssefServer14.modeldict' # Path of weights of the Model
+YoussefServerPathModel= '/home/saied/ML/ML2/youssefServer16.modeldict' # Path of weights of the Model
 #Server 5 is init(Batchnorm), not balanced, 128 auc=0.7 after 10 epochs 
 #Server 6 is init(Batchnorm), balanced, 128 auc=0.7/0.64 after 2/10 epochs
 #Server 7 is init(Batchnorm), balanced, 8 auc=0.74/0.7 after 1/5 epochs
@@ -10,7 +10,8 @@ YoussefServerPathModel= '/home/saied/ML/ML2/youssefServer14.modeldict' # Path of
 #Server 8 is init(Batchnorm), balanced, 128, weightdecay =0.0001 auc =0.64 after 4 epochs 
 #Server 10 is SIMPLE is init(Batchnorm), not balanced, 8 auc=0.65/0.7 after 5/15 epochs (redo)
 #Server 11 is init(Batchnorm), not balanced, 8 auc= 0.72 after 1 epochs
-#Server 12 is Data augmented, init(Batchnorm), balanced, 8 auc=0.8/?? after 10/?? epochs (best) (redo decrease weight decay)
+#Server 12 is Data augmented, init(Batchnorm), balanced, 8,  weightdecay =0.0001 auc=0.8/?? after 10/?? epochs (best) (redo decrease weight decay)
+#Server 16 is Data augmented, init(Batchnorm), balanced, 8,  weightdecay =0 auc=??/?? after ??/?? epochs 
 #Server 13 is Data augmented, init(Batchnorm), balanced, 128 auc=??/?? after ??/?? epochs (best?)
 #Server 14 is Data augmented, SIMPLE, init(Batchnorm), balanced, 128 auc=??/?? after ??/?? epochs
 #Server 15 is Data augmented, SIMPLE, init(Batchnorm), balanced, 8 auc=??/?? after ??/?? epochs
@@ -23,10 +24,10 @@ YoussefServerPathDataset= '/home/saied/ML/ML2/traintestsets.pckl' # Path of trai
 #Global variables (booleans):
 simple =0
 data_augmentation =1
-use_saved_model =1
+use_saved_model =0
 save_trained_model=1
 train_or_not =1
-epochs =5
+epochs =15
 OnServer =1
 if OnServer:
     PicklingPath=YoussefServerPicklingPath
@@ -41,7 +42,7 @@ else:
 proportion_traindata = 0.8 # the proportion of the full dataset used for training
 printevery = 2000
 
-print("Server12")
+print("Server16")
 
 # %% Import Dataset and create trainloader 
 import datasetY as dataset
@@ -193,7 +194,7 @@ if use_saved_model:
 #Training starts
 
 criterion = nn.SoftMarginLoss()
-optimizer = optim.SGD(net.parameters(), lr=lrv, momentum=momentumv,weight_decay=0.00001)
+optimizer = optim.SGD(net.parameters(), lr=lrv, momentum=momentumv)
 
 net.train()
 
