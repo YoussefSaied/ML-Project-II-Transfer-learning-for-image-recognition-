@@ -163,7 +163,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 momentumv=0.90
-lrv=0.001
+lrv=0.0001
 
 print("Learning rate= "+str(lrv))
 
@@ -205,7 +205,7 @@ net.to(device)
 #Training starts
 
 criterion = nn.SoftMarginLoss()
-optimizer = optim.SGD(net.parameters(), lr=lrv, momentum=momentumv)
+optimizer = optim.SGD(net.parameters(), lr=lrv, momentum=momentumv, weight_decay= 0.0001)
 
 net.train()
 
