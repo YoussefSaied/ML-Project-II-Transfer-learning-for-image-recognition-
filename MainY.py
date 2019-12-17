@@ -2,7 +2,7 @@
 #Our variables:
 YoussefPathModel= '/home/youssef/EPFL/MA1/Machine learning/MLProject2/ML2/youssefServer4.modeldict' # Path of the weights of the model
 Youssefdatapath = '/home/youssef/EPFL/MA1/Machine learning/MLProject2/Data' # Path of data
-YoussefServerPathModel= '/home/saied/ML/ML2/youssefServer16.modeldict' # Path of weights of the Model
+YoussefServerPathModel= '/home/saied/ML/ML2/youssefServer12.modeldict' # Path of weights of the Model
 #Server 5 is init(Batchnorm), not balanced, 128 auc=0.7 after 10 epochs 
 #Server 6 is init(Batchnorm), balanced, 128 auc=0.7/0.64 after 2/10 epochs
 #Server 7 is init(Batchnorm), balanced, 8 auc=0.74/0.7 after 1/5 epochs
@@ -10,7 +10,7 @@ YoussefServerPathModel= '/home/saied/ML/ML2/youssefServer16.modeldict' # Path of
 #Server 8 is init(Batchnorm), balanced, 128, weightdecay =0.0001 auc =0.64 after 4 epochs 
 #Server 10 is SIMPLE is init(Batchnorm), not balanced, 8 auc=0.65/0.7 after 5/15 epochs (redo)
 #Server 11 is init(Batchnorm), not balanced, 8 auc= 0.72 after 1 epochs
-#Server 12 is Data augmented, init(Batchnorm), balanced, 8,  weightdecay =0.0001 auc=0.8/?? after 10/?? epochs (best) (redo decrease weight decay)
+#Server 12 is Data augmented, init(Batchnorm), balanced, 8,  weightdecay =0.0001 auc=0.8/?? after 10/?? epochs (best) (redo decrease weight decay) (increase lr) (parallelization)
 #Server 16 is Data augmented, init(Batchnorm), balanced, 8,  weightdecay =0 auc=??/?? after ??/?? epochs 
 #Server 13 is Data augmented, init(Batchnorm), balanced, 128 auc=??/?? after ??/?? epochs (best?)
 #Server 14 is Data augmented, SIMPLE, init(Batchnorm), balanced, 128 auc=??/?? after ??/?? epochs
@@ -22,9 +22,10 @@ YoussefPathDataset= '/home/youssef/EPFL/MA1/Machine learning/MLProject2/traintes
 YoussefServerPathDataset= '/home/saied/ML/ML2/traintestsets.pckl' # Path of training and test dataset
 
 #Global variables (booleans):
+use_parallelization=1
 simple =0
 data_augmentation =1
-use_saved_model =0
+use_saved_model =1
 save_trained_model=1
 train_or_not =1
 epochs =15
@@ -42,7 +43,7 @@ else:
 proportion_traindata = 0.8 # the proportion of the full dataset used for training
 printevery = 2000
 
-print("Server16")
+print("Server12")
 
 # %% Import Dataset and create trainloader 
 import datasetY as dataset
@@ -92,7 +93,7 @@ print(len(trainset))
 
 # Dataloaders
 
-batch_sizev=8
+batch_sizev=24
 test_batch_size = 1
 
 
@@ -121,11 +122,7 @@ else:
 
 
 
-if torch.cuda.device_count() > 1 and False:
-    import torch.nn as nn
-    print("Let's use", torch.cuda.device_count(), "GPUs!")
-    model = nn.DataParallel(model)
-net.to(device)
+
 
 if not torch.cuda.is_available() : #ie if NOT on the server
     print(net)
@@ -154,6 +151,12 @@ def init_batchnorm(model): # For initializing the batch normalization layers
 
 init_batchnorm(net)
 net.to(device)
+if torch.cuda.device_count() > 1 and use_parallelization:
+    import torch.nn as nn
+    print("Let's use", torch.cuda.device_count(), "GPUs!")
+    model = nn.DataParallel(model)
+net.to(device)
+
 if not torch.cuda.is_available() : #ie if NOT on the server
     print(net)
 # %% Train Neural network
@@ -163,7 +166,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 momentumv=0.90
-lrv=0.01
+lrv=0.05
 
 
 # To calculate accuracy
