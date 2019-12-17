@@ -124,6 +124,8 @@ else:
 
 
 
+
+
 if not torch.cuda.is_available() : #ie if NOT on the server
     print(net)
 
@@ -152,7 +154,13 @@ def init_batchnorm(model): # For initializing the batch normalization layers
 init_batchnorm(net)
 net.to(device)
 
-
+#Option to parallelize
+print("There are", torch.cuda.device_count(), "GPUs!")
+if torch.cuda.device_count() > 1 and use_parallelization:
+    import torch.nn as nn
+    print("Let's use", torch.cuda.device_count(), "GPUs!")
+    net = nn.DataParallel(net)
+net.to(device)
 
 if not torch.cuda.is_available() : #ie if NOT on the server
     print(net)
@@ -193,14 +201,6 @@ if use_saved_model:
             print("Empty file...")
         print("Using saved model...")
 
-
-#Option to parallelize
-print("There are", torch.cuda.device_count(), "GPUs!")
-if torch.cuda.device_count() > 1 and use_parallelization:
-    import torch.nn as nn
-    print("Let's use", torch.cuda.device_count(), "GPUs!")
-    net = nn.DataParallel(net)
-net.to(device)
 
 #Training starts
 
