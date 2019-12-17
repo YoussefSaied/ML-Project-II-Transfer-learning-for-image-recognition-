@@ -288,7 +288,7 @@ if train_or_not:
         with torch.no_grad():
             if True:
                 for k, testset_partial in enumerate(testloader):
-                    if k <100000:
+                    if k <1000:
                         testset_partial_I , testset_partial_labels = testset_partial[0].to(device), testset_partial[1].to(device)
                         predictions += [p.item() for p in net(testset_partial_I) ]
                         labels += testset_partial_labels.tolist()
