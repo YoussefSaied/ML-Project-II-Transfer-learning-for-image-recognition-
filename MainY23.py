@@ -285,7 +285,7 @@ if train_or_not:
                         labels += testset_partial_labels.tolist()
                     else:
                         break
-            net.train()
+            net.eval()
             
             file_name= PicklingPath+"PredictionsAndLabelsTrial1Epoch"+str(epoch)
             import os
@@ -299,7 +299,7 @@ if train_or_not:
 
         # calculate and save accuracy and stop if test accuracy increases 
             if epoch%2 ==0:
-                #net.eval()
+                net.eval()
                 test_accuracyv =  ROC_accuracy(net)
                 print("Test accuracy: %5f"%test_accuracyv)
                 if test_accuracyv< np.min(train_accuracy_list) and False:
@@ -310,8 +310,7 @@ if train_or_not:
 
         # AUC for ROC curve
         
-        #net.eval()
-        net.train()
+        net.eval()
         from sklearn import metrics
         predictions = []
         labels = []
@@ -361,7 +360,8 @@ if train_or_not:
         print("Saving model...")
 
 if torch.cuda.is_available() : #ie if on the server
-    #net.eval()
+    net.eval()
+    test_accuracyv =  test_accuracy(net)
     print("Test accuracy: %5f"%test_accuracyv)
     train_accuracyv =  train_accuracy(net)
     print("Train accuracy: %5f"%train_accuracyv)
