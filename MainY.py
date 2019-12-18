@@ -165,13 +165,11 @@ def init_batchnorm(model): # For initializing the batch normalization layers
 
 net.to(device)
 if not transfer_learning:
-    #init_batchnorm(net)
-    print("Not using Transfer learning 1")
+    init_batchnorm(net)
 
 
 #Option to parallelize
 print("There are", torch.cuda.device_count(), "GPUs!")
-
 if torch.cuda.device_count() > 1 and use_parallelization:
     import torch.nn as nn
     print("Let's use", torch.cuda.device_count(), "GPUs!")
@@ -312,7 +310,7 @@ if train_or_not:
 
         # AUC for ROC curve
         
-        #net.eval()
+        net.eval()
         from sklearn import metrics
         predictions = []
         labels = []
@@ -357,20 +355,7 @@ if train_or_not:
         print("Saving model...")
 
 if torch.cuda.is_available() : #ie if on the server
-    #net.eval()
-    from sklearn import metrics
-    predictions = []
-    labels = []
-    with torch.no_grad():
-        if True:
-            for k, testset_partial in enumerate(testloader):
-                if k <1000:
-                    testset_partial_I , testset_partial_labels = testset_partial[0].to(device), testset_partial[1].to(device)
-                    predictions += [p.item() for p in net(testset_partial_I) ]
-                    labels += testset_partial_labels.tolist()
-
-            auc = metrics.roc_auc_score(labels, predictions)
-            print("Test auc: %5f"%auc)
+    net.eval()
     test_accuracyv = test_accuracy(net)
     print("Test accuracy: %5f"%test_accuracyv)
     train_accuracyv =  ROC_accuracy(net)
