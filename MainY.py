@@ -166,10 +166,12 @@ def init_batchnorm(model): # For initializing the batch normalization layers
 net.to(device)
 if not transfer_learning:
     #init_batchnorm(net)
+    print("Not using Transfer learning 1")
 
 
 #Option to parallelize
 print("There are", torch.cuda.device_count(), "GPUs!")
+
 if torch.cuda.device_count() > 1 and use_parallelization:
     import torch.nn as nn
     print("Let's use", torch.cuda.device_count(), "GPUs!")
