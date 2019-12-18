@@ -2,7 +2,7 @@
 #Our variables:
 YoussefPathModel= '/home/youssef/EPFL/MA1/Machine learning/MLProject2/ML2/youssefServer4.modeldict' # Path of the weights of the model
 Youssefdatapath = '/home/youssef/EPFL/MA1/Machine learning/MLProject2/Data' # Path of data
-YoussefServerPathModel= '/home/saied/ML/ML2/youssefServer4.modeldict' # Path of weights of the Model
+YoussefServerPathModel= '/home/saied/ML/ML2/youssefServer12.modeldict' # Path of weights of the Model
 #Server 5 is init(Batchnorm), not balanced, 128 auc=0.7 after 10 epochs 
 #Server 6 is init(Batchnorm), balanced, 128 auc=0.7/0.64 after 2/10 epochs
 #Server 7 is init(Batchnorm), balanced, 8 auc=0.74/0.7 after 1/5 epochs
@@ -24,14 +24,14 @@ YoussefServerPathDataset= '/home/saied/ML/ML2/traintestsets.pckl' # Path of trai
 
 #Global variables (booleans):
 transfer_learning=0
-init_batchnormv =0
-use_parallelization=0
+init_batchnormv =1
+use_parallelization=1
 simple =0
 data_augmentation =1
 use_saved_model =1
-save_trained_model=0
-train_or_not =0
-epochs =4
+save_trained_model=1
+train_or_not =1
+epochs =1
 OnServer =1
 if OnServer:
     PicklingPath=YoussefServerPicklingPath
@@ -46,7 +46,7 @@ else:
 proportion_traindata = 0.8 # the proportion of the full dataset used for training
 printevery = 1000
 
-print("Server4")
+print("Server12")
 
 # %% Import Dataset and create trainloader 
 import datasetY as dataset
@@ -104,9 +104,8 @@ print(len(trainset))
 
 # Dataloaders
 
-batch_sizev=24
-test_batch_size = 8
-
+batch_sizev=128
+test_batch_size = 1
 
 samplerv= BalancedBatchSampler2(trainset)
 samplertest = BalancedBatchSampler2(testset)
@@ -186,7 +185,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 momentumv=0.90
-lrv=0.01
+lrv=10**-8
 
 print("Learning rate= "+str(lrv))
 
@@ -356,23 +355,9 @@ if train_or_not:
         print("Saving model...")
 
 if torch.cuda.is_available() : #ie if on the server
-    net.train()
-    from sklearn import metrics
-    predictions = []
-    labels = []
-    with torch.no_grad():
-        if True:
-            for k, testset_partial in enumerate(testloader):
-                if k <1000:
-                    testset_partial_I , testset_partial_labels = testset_partial[0].to(device), testset_partial[1].to(device)
-                    predictions += [p.item() for p in net(testset_partial_I) ]
-                    labels += testset_partial_labels.tolist()
-
-            auc = metrics.roc_auc_score(labels, predictions)
-            print("Test auc: %5f"%auc)
-    test_accuracyv = test_accuracy(net)
+    net.eval()
     print("Test accuracy: %5f"%test_accuracyv)
-    train_accuracyv =  ROC_accuracy(net)
+    train_accuracyv =  train_accuracy(net)
     print("Train accuracy: %5f"%train_accuracyv)
     import sys
     sys.exit()
