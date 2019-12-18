@@ -2,7 +2,7 @@
 #Our variables:
 YoussefPathModel= '/home/youssef/EPFL/MA1/Machine learning/MLProject2/ML2/youssefServer4.modeldict' # Path of the weights of the model
 Youssefdatapath = '/home/youssef/EPFL/MA1/Machine learning/MLProject2/Data' # Path of data
-YoussefServerPathModel= '/home/saied/ML/ML2/youssefServer12.modeldict' # Path of weights of the Model
+YoussefServerPathModel= '/home/saied/ML/ML2/youssefServer20.modeldict' # Path of weights of the Model
 #Server 5 is init(Batchnorm), not balanced, 128 auc=0.7 after 10 epochs 
 #Server 6 is init(Batchnorm), balanced, 128 auc=0.7/0.64 after 2/10 epochs
 #Server 7 is init(Batchnorm), balanced, 8 auc=0.74/0.7 after 1/5 epochs
@@ -15,6 +15,7 @@ YoussefServerPathModel= '/home/saied/ML/ML2/youssefServer12.modeldict' # Path of
 #Server 13 is Data augmented, init(Batchnorm), balanced, 128 auc=??/?? after ??/?? epochs (best?)
 #Server 14 is Data augmented, SIMPLE, init(Batchnorm), balanced, 128 auc=??/?? after ??/?? epochs
 #Server 15 is Data augmented, SIMPLE, init(Batchnorm), balanced, 8 auc=??/?? after ??/?? epochs
+#Server 20 is TRANSFERLEARNING, init(Batchnorm), balanced, 128, auc=??/?? after ??/?? epochs
 YoussefServerdatapath = '/data/mgeiger/gg2/data' # Path of data
 YoussefServerPicklingPath = '/home/saied/ML/ML2/' # Path for pickling 
 YoussefPicklingPath = '/home/youssef/EPFL/MA1/Machine learning/MLProject2/ML2/Predictions/' # Path for pickling 
@@ -22,10 +23,11 @@ YoussefPathDataset= '/home/youssef/EPFL/MA1/Machine learning/MLProject2/traintes
 YoussefServerPathDataset= '/home/saied/ML/ML2/traintestsets.pckl' # Path of training and test dataset
 
 #Global variables (booleans):
-use_parallelization=1
+transfer_learning=1
+use_parallelization=0
 simple =0
 data_augmentation =1
-use_saved_model =1
+use_saved_model =0
 save_trained_model=1
 train_or_not =1
 epochs =3
@@ -43,13 +45,13 @@ else:
 proportion_traindata = 0.8 # the proportion of the full dataset used for training
 printevery = 2000
 
-print("Server12")
+print("Server20")
 
 # %% Import Dataset and create trainloader 
 import datasetY as dataset
 import torch
 import importlib
-from datasetY import BalancedBatchSampler, BalancedBatchSampler2, random_splitY, accuracy
+from datasetY import BalancedBatchSampler, BalancedBatchSampler2, random_splitY, accuracy, load_GG2_imagesTransfer, load_GG2_images2
 import itertools
 import numpy as np
 
@@ -61,15 +63,23 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 # Pickling datasets
 
+if transfer_learning:
+    transform=load_GG2_imagesTransfer
+else:
+    transform=load_GG2_images2
+
 import os
 if os.path.isfile(PathDataset):
     if os.stat(PathDataset).st_size > 0:
         import pickle
         with open(PathDataset, 'rb') as pickle_file:
             [full_dataset,trainset,testset] = pickle.load(pickle_file)
+        full_dataset.transform=transform
+        trainset.transform=transform
+        testset.transform=transform
         print("Loading datasets...")
 else: 
-    full_dataset = dataset.GG2(datapath,data_augmentation=False)
+    full_dataset = dataset.GG2(datapath,data_augmentation=False,transform=transform)
 
     # To split the full_dataset
     train_size = int(proportion_traindata * len(full_dataset))
@@ -93,7 +103,7 @@ print(len(trainset))
 
 # Dataloaders
 
-batch_sizev=24
+batch_sizev=128
 test_batch_size = 1
 
 
@@ -151,7 +161,7 @@ def init_batchnorm(model): # For initializing the batch normalization layers
 
 #convert_batch_to_instance(net)
 
-init_batchnorm(net)
+#init_batchnorm(net)
 net.to(device)
 
 #Option to parallelize
@@ -171,7 +181,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 momentumv=0.90
-lrv=0.01
+lrv=0.001
 
 print("Learning rate= "+str(lrv))
 
@@ -205,7 +215,17 @@ if use_saved_model:
 #Training starts
 
 criterion = nn.SoftMarginLoss()
-optimizer = optim.SGD(net.parameters(), lr=lrv, momentum=momentumv, weight_decay= 0.0001)
+
+if transfer_learning:
+    optimizer = optim.SGD(net.parameters(), lr=lrv, momentum=momentumv, weight_decay= 0.0001)
+else:
+    optimizer = optim.SGD(net.classifier.parameters(), lr=lrv, momentum=momentumv)
+    for param in net.parameters():
+        param.requires_grad = False
+    
+# Decay LR by a factor of 0.1 every 7 epochs
+from torch.optim import lr_scheduler
+exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
 
 net.train()
 
@@ -215,6 +235,7 @@ if train_or_not:
     test_accuracy_list = []
     for epoch in range(epochs):  # loop over the dataset multiple times
         print("Starting epoch %d"%(epoch+1))
+        print("Learning rate= "+str(lrv))
         running_loss = 0.0
         for i, data in enumerate(trainloader, 0):
             # get the inputs; data is a list of [inputs, labels]

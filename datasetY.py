@@ -41,6 +41,23 @@ def load_GG2_images2(images):
     
     return torch.cat((images[0].unsqueeze(0), others_upsampled),dim=0)
 
+def load_GG2_imagesTransfer(images):
+    """
+    Normalizes images and does NOT upscales them and returns only visible part
+    """
+
+
+    images = [fits.open(file, memmap=False)[0].data for file in images]
+    images = [torch.from_numpy(x.byteswap().newbyteorder()) for x in images]
+
+    #Normailze
+    normalize = [3.5239e+10, 1.5327e+09, 1.8903e+09, 1.2963e+09] #normalizations for 4 images
+    images = [x.mul(n) for x, n in zip(images, normalize)]
+
+
+    visible = torch.stack(images[1:])    
+    return visible
+
 def label_tansform_basic(labels):
     return (int(labels['n_sources']))*2.0 -1.0
 
@@ -64,7 +81,7 @@ class GG2(torch.utils.data.Dataset):
     url_train_log = 'http://metcalf1.difa.unibo.it/DATA3/image_catalog2.0train.csv'
 
 
-    def __init__(self, root, data_augmentation=False, transform=load_GG2_images2,target_transform =  label_tansform_basic):
+    def __init__(self, root, data_augmentation=False, transform=load_GG2_imagesTransfer,target_transform =  label_tansform_basic):
     #Upscale
         """
         Initializes the dataset with images and labels using the root path given.
