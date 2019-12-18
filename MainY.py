@@ -24,7 +24,7 @@ YoussefServerPathDataset= '/home/saied/ML/ML2/traintestsets.pckl' # Path of trai
 
 #Global variables (booleans):
 transfer_learning=0
-use_parallelization=0
+use_parallelization=1
 simple =0
 data_augmentation =1
 use_saved_model =1
@@ -163,8 +163,10 @@ def init_batchnorm(model): # For initializing the batch normalization layers
 
 #convert_batch_to_instance(net)
 
-#init_batchnorm(net)
 net.to(device)
+if not transfer_learning:
+    init_batchnorm(net)
+
 
 #Option to parallelize
 print("There are", torch.cuda.device_count(), "GPUs!")
@@ -218,7 +220,7 @@ if use_saved_model:
 
 criterion = nn.SoftMarginLoss()
 
-if transfer_learning:
+if not transfer_learning:
     optimizer = optim.SGD(net.parameters(), lr=lrv, momentum=momentumv)
 else:
     optimizer = optim.SGD(net.classifier.parameters(), lr=lrv, momentum=momentumv)
