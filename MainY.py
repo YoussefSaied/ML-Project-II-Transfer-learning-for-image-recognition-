@@ -24,7 +24,7 @@ YoussefServerPathDataset= '/home/saied/ML/ML2/traintestsets.pckl' # Path of trai
 
 #Global variables (booleans):
 transfer_learning=0
-use_parallelization=1
+use_parallelization=0
 simple =0
 data_augmentation =1
 use_saved_model =1
