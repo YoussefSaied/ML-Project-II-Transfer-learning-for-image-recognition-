@@ -104,7 +104,7 @@ print(len(trainset))
 
 # Dataloaders
 
-batch_sizev=128
+batch_sizev=8
 test_batch_size = 1
 
 samplerv= BalancedBatchSampler2(trainset)
