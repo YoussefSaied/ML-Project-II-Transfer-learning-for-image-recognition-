@@ -2,7 +2,7 @@
 #Our variables:
 YoussefPathModel= '/home/youssef/EPFL/MA1/Machine learning/MLProject2/ML2/youssefServer4.modeldict' # Path of the weights of the model
 Youssefdatapath = '/home/youssef/EPFL/MA1/Machine learning/MLProject2/Data' # Path of data
-YoussefServerPathModel= '/home/saied/ML/ML2/youssefServer20.modeldict' # Path of weights of the Model
+YoussefServerPathModel= '/home/saied/ML/ML2/youssefServer12.modeldict' # Path of weights of the Model
 #Server 5 is init(Batchnorm), not balanced, 128 auc=0.7 after 10 epochs 
 #Server 6 is init(Batchnorm), balanced, 128 auc=0.7/0.64 after 2/10 epochs
 #Server 7 is init(Batchnorm), balanced, 8 auc=0.74/0.7 after 1/5 epochs
@@ -23,11 +23,11 @@ YoussefPathDataset= '/home/youssef/EPFL/MA1/Machine learning/MLProject2/traintes
 YoussefServerPathDataset= '/home/saied/ML/ML2/traintestsets.pckl' # Path of training and test dataset
 
 #Global variables (booleans):
-transfer_learning=1
-use_parallelization=0
+transfer_learning=0
+use_parallelization=1
 simple =0
 data_augmentation =1
-use_saved_model =0
+use_saved_model =1
 save_trained_model=1
 train_or_not =1
 epochs =3
@@ -45,7 +45,7 @@ else:
 proportion_traindata = 0.8 # the proportion of the full dataset used for training
 printevery = 2000
 
-print("Server20")
+print("Server12")
 
 # %% Import Dataset and create trainloader 
 import datasetY as dataset
@@ -103,7 +103,7 @@ print(len(trainset))
 
 # Dataloaders
 
-batch_sizev=128
+batch_sizev=24
 test_batch_size = 1
 
 
@@ -219,7 +219,7 @@ if use_saved_model:
 criterion = nn.SoftMarginLoss()
 
 if transfer_learning:
-    optimizer = optim.SGD(net.parameters(), lr=lrv, momentum=momentumv, weight_decay= 0.0001)
+    optimizer = optim.SGD(net.parameters(), lr=lrv, momentum=momentumv)
 else:
     optimizer = optim.SGD(net.classifier.parameters(), lr=lrv, momentum=momentumv)
     for param in net.parameters():
