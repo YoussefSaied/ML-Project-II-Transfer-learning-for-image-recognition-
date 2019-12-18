@@ -2,7 +2,7 @@
 #Our variables:
 YoussefPathModel= '/home/youssef/EPFL/MA1/Machine learning/MLProject2/ML2/youssefServer4.modeldict' # Path of the weights of the model
 Youssefdatapath = '/home/youssef/EPFL/MA1/Machine learning/MLProject2/Data' # Path of data
-YoussefServerPathModel= '/home/saied/ML/ML2/youssefServer4.modeldict' # Path of weights of the Model
+YoussefServerPathModel= '/home/saied/ML/ML2/youssefServer22.modeldict' # Path of weights of the Model
 #Server 5 is init(Batchnorm), not balanced, 128 auc=0.7 after 10 epochs 
 #Server 6 is init(Batchnorm), balanced, 128 auc=0.7/0.64 after 2/10 epochs
 #Server 7 is init(Batchnorm), balanced, 8 auc=0.74/0.7 after 1/5 epochs
@@ -46,7 +46,7 @@ else:
 proportion_traindata = 0.8 # the proportion of the full dataset used for training
 printevery = 1000
 
-print("Server4")
+print("Server22")
 
 # %% Import Dataset and create trainloader 
 import datasetY as dataset
@@ -274,7 +274,7 @@ if train_or_not:
         # save predictions and labels for ROC curve calculation
         print("Saving predictions and calculating accuracies...")
         if False:
-            net.eval()
+            #net.eval()
             predictions = []
             labels = []
             for k, testset_partial in enumerate(testloader):
@@ -299,7 +299,7 @@ if train_or_not:
 
         # calculate and save accuracy and stop if test accuracy increases 
             if epoch%2 ==0:
-                net.eval()
+                #net.eval()
                 test_accuracyv =  ROC_accuracy(net)
                 print("Test accuracy: %5f"%test_accuracyv)
                 if test_accuracyv< np.min(train_accuracy_list) and False:
@@ -310,6 +310,7 @@ if train_or_not:
 
         # AUC for ROC curve
         
+        #net.eval()
         net.train()
         from sklearn import metrics
         predictions = []
@@ -360,7 +361,7 @@ if train_or_not:
         print("Saving model...")
 
 if torch.cuda.is_available() : #ie if on the server
-    net.train()
+    #net.eval()
     print("Test accuracy: %5f"%test_accuracyv)
     train_accuracyv =  train_accuracy(net)
     print("Train accuracy: %5f"%train_accuracyv)
