@@ -114,20 +114,22 @@ trainloader = torch.utils.data.DataLoader(trainset, sampler=samplerv, shuffle=Fa
 testloader = torch.utils.data.DataLoader(testset, sampler=None, shuffle =True, batch_size= test_batch_size)
 ROCloader = torch.utils.data.DataLoader(testset,batch_size=1)
 # %% Import Neural network
+
 if simple:
     net = torch.hub.load('rwightman/gen-efficientnet-pytorch', 'tf_mobilenetv3_small_minimal_100',
     pretrained=False)
 
     # Change First and Last Layer
-    net.conv_stem = torch.nn.Conv2d(4,16,kernel_size=(2,2),bias=False)
+    if not transfer_learning:
+        net.conv_stem = torch.nn.Conv2d(4,16,kernel_size=(2,2),bias=False)
     net.classifier = torch.nn.Linear(1024, 1)
 else: 
     net = torch.hub.load('rwightman/gen-efficientnet-pytorch', 'efficientnet_b0',
     pretrained=True)
 
     # Change First and Last Layer
-    net.conv_stem = torch.nn.Conv2d(4, 32, kernel_size=(3, 3), stride=(2, 2),
-    padding=(1, 1), bias=False)
+    if not transfer_learning:
+        net.conv_stem = torch.nn.Conv2d(4, 32, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False)
     net.classifier = torch.nn.Linear(1280, 1)
 
 
