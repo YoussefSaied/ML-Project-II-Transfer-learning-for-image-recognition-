@@ -2,7 +2,7 @@
 #Our variables:
 YoussefPathModel= '/home/youssef/EPFL/MA1/Machine learning/MLProject2/ML2/youssefServer4.modeldict' # Path of the weights of the model
 Youssefdatapath = '/home/youssef/EPFL/MA1/Machine learning/MLProject2/Data' # Path of data
-YoussefServerPathModel= '/home/saied/ML/ML2/youssefServer4.modeldict' # Path of weights of the Model
+YoussefServerPathModel= '/home/saied/ML/ML2/youssefServer12.modeldict' # Path of weights of the Model
 #Server 5 is init(Batchnorm), not balanced, 128 auc=0.7 after 10 epochs 
 #Server 6 is init(Batchnorm), balanced, 128 auc=0.7/0.64 after 2/10 epochs
 #Server 7 is init(Batchnorm), balanced, 8 auc=0.74/0.7 after 1/5 epochs
@@ -24,8 +24,8 @@ YoussefServerPathDataset= '/home/saied/ML/ML2/traintestsets.pckl' # Path of trai
 
 #Global variables (booleans):
 transfer_learning=0
-init_batchnormv =0
-use_parallelization=0
+init_batchnormv =1
+use_parallelization=1
 simple =0
 data_augmentation =1
 use_saved_model =1
@@ -44,7 +44,7 @@ else:
     PathDataset =YoussefPathDataset
     datapath = Youssefdatapath
 proportion_traindata = 0.8 # the proportion of the full dataset used for training
-printevery = 1000
+printevery = 100
 
 print("Server12")
 
@@ -185,7 +185,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 momentumv=0.90
-lrv=10**-2
+lrv=10**-8
 
 print("Learning rate= "+str(lrv))
 
@@ -238,8 +238,8 @@ net.train()
 
 if train_or_not:
     print("Starting training...")
-    train_accuracy_list = np.array([0])
-    test_accuracy_list = []
+    train_auc_list = np.array([0])
+    test_auc_list = []
     for epoch in range(epochs):  # loop over the dataset multiple times
         exp_lr_scheduler.step()
         print("Starting epoch %d"%(epoch+1))
@@ -310,8 +310,7 @@ if train_or_not:
 
         # AUC for ROC curve
         
-        #net.eval()
-        net.train()
+        net.eval()
         from sklearn import metrics
         predictions = []
         labels = []
@@ -322,9 +321,14 @@ if train_or_not:
                         testset_partial_I , testset_partial_labels = testset_partial[0].to(device), testset_partial[1].to(device)
                         predictions += [p.item() for p in net(testset_partial_I) ]
                         labels += testset_partial_labels.tolist()
+                    else: break
 
                 auc = metrics.roc_auc_score(labels, predictions)
+                test_auc_list = np.concatenate((train_auc_list, np.array([auc])))
+                if auc < np.max(test_auc_list)-0.04:
+                    break
                 print("Test auc: %5f"%auc)
+
                 #train_accuracy_list = np.concatenate((train_accuracy_list, np.array([auc])))
                 if False:
                     for k, trainset_partial in enumerate(trainloader):
@@ -344,7 +348,7 @@ if train_or_not:
         os.remove(file_name)  # deleting the file
     import pickle
     with open(file_name, 'wb') as pickle_file:
-        pickle.dump(train_accuracy_list,pickle_file)
+        pickle.dump(test_auc_list,pickle_file)
         pickle_file.close()
     
     print('Finished Training')
@@ -356,8 +360,7 @@ if train_or_not:
         print("Saving model...")
 
 if torch.cuda.is_available() : #ie if on the server
-    #net.eval()
-    net.train()
+    net.eval()
     print("Test accuracy: %5f"%test_accuracyv)
     train_accuracyv =  train_accuracy(net)
     print("Train accuracy: %5f"%train_accuracyv)
