@@ -46,7 +46,7 @@ else:
 proportion_traindata = 0.8 # the proportion of the full dataset used for training
 printevery = 1000
 
-print("Server22")
+print("Server23")
 
 # %% Import Dataset and create trainloader 
 import datasetY as dataset
