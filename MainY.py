@@ -226,6 +226,7 @@ else:
     optimizer = optim.SGD(net.classifier.parameters(), lr=lrv, momentum=momentumv)
     for param in net.parameters():
         param.requires_grad = False
+    net.classifier.parameters().requires_grad = True
     
 # Decay LR by a factor of 0.1 every 7 epochs
 from torch.optim import lr_scheduler
