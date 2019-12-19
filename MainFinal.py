@@ -11,7 +11,6 @@ YoussefServerPathDataset= '/home/saied/ML/ML2/traintestsets.pckl' # Path of trai
 import os 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
-
 #Global variables (booleans):
 transfer_learning=0
 init_batchnormv =1
@@ -25,6 +24,73 @@ save_trained_model='Model1'
 train_or_not =0
 epochs =20
 
+proportion_traindata = 0.8 # the proportion of the full dataset used for training
+printevery = 1000
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
+
+momentumv=0.90
+lrv=10**-2
+
+train_batch_size=8
+
+import argparse
+parser = argparse.ArgumentParser()
+
+# the proportion of the full dataset used for training
+parser.add_argument("--ptd", type=int, default=proportion_traindata) 
+# training dataloader batchsize
+parser.add_argument("--tbs", type=int, default=train_batch_size)
+# learning rate
+parser.add_argument("--lr", type=float, default=lrv)
+# momentum
+parser.add_argument("--mom", type=float, default=momentumv)
+# number of epochs 
+parser.add_argument("--epoch", type=int, default=epochs)
+# device
+parser.add_argument("--device", type=str, default=device)
+# path
+parser.add_argument("--root", type=str, default=dir_path)
+# model
+parser.add_argument("--model", type=str, default=proportion_traindata)
+# print every
+parser.add_argument("--pevery", type=int, default=printevery)
+# transfer learning boolean
+parser.add_argument("--transfer", type=int, default=transfer_learning)
+# Whether or not to init the batch normalization layers
+parser.add_argument("--initbatch", type=int, default=init_batchnormv)
+# Whether or not to parallelize
+parser.add_argument("--parallelize", type=int, default=use_parallelization)
+# Whether or not to use data augmentation
+parser.add_argument("--dataaugmentation", type=int, default=data_augmentation)
+# Whether or not to use data augmentation
+parser.add_argument("--train", type=int, default=train_or_not)
+
+args = parser.parse_args()
+
+transfer_learning=args.transfer
+init_batchnormv =args.initbatch
+use_parallelization=args.parallelize
+simple =0
+data_augmentation =args.dataaugmentation
+
+use_saved_model = args.model
+save_trained_model=args.model
+
+train_or_not =args.train
+epochs = args.epoch
+
+proportion_traindata = args.ptd # the proportion of the full dataset used for training
+printevery = args.pevery
+device = args.device
+
+
+momentumv=args.mom
+lrv=args.lr
+
+train_batch_size=args.tbs
+
+
 
 
 # PLEASE INSERT YOUR PATH HERE
@@ -32,8 +98,6 @@ PathModel= dir_path+'/'+use_saved_model
 PathDataset = dir_path +'/traintestsets.pckl'
 datapath = dir_path+'/Data' #YoussefServerdatapath
 
-proportion_traindata = 0.8 # the proportion of the full dataset used for training
-printevery = 1000
 
 # %% Import Dataset and create trainloader 
 import datasetY as dataset
@@ -43,13 +107,13 @@ from datasetY import BalancedBatchSampler, BalancedBatchSampler2, random_splitY,
 import itertools
 import numpy as np
 
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
 
 # Pickling datasets
 
 from datasetY import MakingDatasets
 trainloader, testloader, ROCloader = MakingDatasets(transfer_learning=transfer_learning, PathDataset=PathDataset
-                                            ,data_augmentation=data_augmentation,batch_sizev=8,test_batch_size=8,
+                                            ,data_augmentation=data_augmentation,batch_sizev=args.tbs,test_batch_size=8,
                                              proportion_traindata=proportion_traindata)
 # %% Import Neural network
 
@@ -98,8 +162,6 @@ import torch.optim as optim
 import torch.nn as nn
 import torch.nn.functional as F
 
-momentumv=0.90
-lrv=10**-2
 
 print("Learning rate= "+str(lrv))
 
@@ -216,9 +278,6 @@ if train_or_not:
         torch.save(net.state_dict(), PathModel)
         print("Saving model...")
 
-
-import sys
-sys.exit()
 
 
 
