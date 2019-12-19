@@ -320,3 +320,103 @@ def flip_on_diagonal_that_goes_down(tensor):
 def flip_on_diagonal_that_goes_up(tensor):
     return rotate_by_270_deg(flip_on_diagonal_that_goes_down(rotate_by_90_deg(tensor)))
 #-----------------------------------------------------
+
+
+#----------------------Functions for main-----------------------
+
+def MakingDatasets(transfer_learning, PathDataset,data_augmentation,batch_sizev,test_batch_size,proportion_traindata):
+    r"""
+    Imports test and training datasets and downloads and creates them if necessary.
+    Arguments:
+        transfer_learning (boolean): Whether to use transfer learning with freezing or not
+        PathDataset (string): path for creating or loading the dataset
+        data_augmentation (boolean): whether or not to use data augmentation
+        batch_sizev (int): batch size for the testing dataloader
+        test_batch_size (int): batch size for the test dataloader
+        proportion_traindata (float): proportion of training data in the whole dataset
+    """
+    if transfer_learning:
+        transform=load_GG2_imagesTransfer
+    else:
+        transform=load_GG2_images2
+
+    import os
+    if os.path.isfile(PathDataset):
+        if os.stat(PathDataset).st_size > 0:
+            import pickle
+            with open(PathDataset, 'rb') as pickle_file:
+                [full_dataset,trainset,testset] = pickle.load(pickle_file)
+            full_dataset.transform=transform
+            trainset.transform=transform
+            testset.transform=transform
+            print("Loading datasets...")
+    else: 
+        full_dataset = dataset.GG2(datapath,data_augmentation=False,transform=transform)
+
+        # To split the full_dataset
+        train_size = int(proportion_traindata * len(full_dataset))
+        test_size = len(full_dataset) - train_size
+        indices, sets = random_splitY(full_dataset, [train_size, test_size])
+        [trainset, testset]=sets
+
+        import pickle
+        with open(PathDataset, 'wb') as pickle_file:
+            pickle.dump([full_dataset,trainset,testset],pickle_file)
+        print("Creating and pickling datasets...")
+
+    # Data augmentation
+
+    if data_augmentation:
+        full_dataset.data_augmentation=True
+        trainset.data_augmentation=True
+        testset.data_augmentation=True
+
+    print(len(trainset))
+
+    # Dataloaders
+
+    batch_sizev=8
+    test_batch_size = 8
+
+    samplerv= BalancedBatchSampler2(trainset)
+    samplertest = BalancedBatchSampler2(testset)
+
+    trainloader = torch.utils.data.DataLoader(trainset, sampler=samplerv, shuffle=False, batch_size= batch_sizev)
+    testloader = torch.utils.data.DataLoader(testset, sampler=None, shuffle =True, batch_size= test_batch_size)
+    ROCloader = torch.utils.data.DataLoader(testset,batch_size=1)
+
+    return trainloader, testloader, ROCloader
+
+# Replace all batch normalization layers by Instance
+def convert_batch_to_instance(model):
+    r"""
+    Replace all batch normalization layers by Instance
+
+    Arguments:
+        Model : The model to which this is applied
+    """
+
+    import torch.nn as nn
+    for child_name, child in model.named_children():
+        if isinstance(child, nn.BatchNorm2d):
+            num_features= child.num_features
+            setattr(model, child_name, nn.InstanceNorm2d(num_features=num_features))
+        else:
+            convert_batch_to_instance(child)
+
+# For initializing the batch normalization layers
+def init_batchnorm(model):
+    r"""
+    Reinitialises all batch normalization layers
+
+    Arguments:
+        Model : The model to which this is applied
+    """
+
+    import torch.nn as nn
+    for child_name, child in model.named_children():
+        if isinstance(child, nn.BatchNorm2d):
+            num_features= child.num_features
+            setattr(model, child_name, nn.BatchNorm2d(num_features=num_features))
+        else:
+            convert_batch_to_instance(child)
