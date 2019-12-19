@@ -351,6 +351,7 @@ def MakingDatasets(transfer_learning, PathDataset,data_augmentation,batch_sizev,
             testset.transform=transform
             print("Loading datasets...")
     else: 
+        import datasetY as dataset
         full_dataset = dataset.GG2(datapath,data_augmentation=False,transform=transform)
 
         # To split the full_dataset
