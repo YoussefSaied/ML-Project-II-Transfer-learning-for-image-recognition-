@@ -54,7 +54,7 @@ parser.add_argument("--device", type=str, default=device)
 # path
 parser.add_argument("--root", type=str, default=dir_path)
 # model
-parser.add_argument("--model", type=str, default=proportion_traindata)
+parser.add_argument("--model", type=str, default=use_saved_model)
 # print every
 parser.add_argument("--pevery", type=int, default=printevery)
 # transfer learning boolean
