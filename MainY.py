@@ -105,7 +105,7 @@ print(len(trainset))
 # Dataloaders
 
 batch_sizev=8
-test_batch_size = 1
+test_batch_size = 8
 
 samplerv= BalancedBatchSampler2(trainset)
 samplertest = BalancedBatchSampler2(testset)
@@ -310,7 +310,6 @@ if train_or_not:
 
         # AUC for ROC curve
         
-        #net.eval()
         net.train()
         from sklearn import metrics
         predictions = []
