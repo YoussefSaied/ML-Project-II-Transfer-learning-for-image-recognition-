@@ -18,14 +18,17 @@ init_batchnormv =1
 use_parallelization=1
 simple =0
 data_augmentation =1
-use_saved_model =1
-save_trained_model=1
+
+use_saved_model ='Model1'
+save_trained_model='Model1'
+
 train_or_not =0
 epochs =20
 
 
+
 # PLEASE INSERT YOUR PATH HERE
-PathModel= dir_path+'/youssefServer22.modeldict'
+PathModel= dir_path+'/'+use_saved_model
 PathDataset = dir_path +'/traintestsets.pckl'
 datapath = dir_path+'/Data' #YoussefServerdatapath
 
@@ -180,27 +183,28 @@ if train_or_not:
         # save predictions and labels for ROC curve calculation
         print("Calculating AUROC...")
 
-        # AUC for ROC curve, stop if test AUROC decreases significantly 
-        
-        #net.eval()
-        net.train()
+        # AUC for ROC curve, stop if test AUROC decreases significantly   
+        if use_saved_model == 'Model1':      
+            net.eval()
+        elif use_saved_model == 'Model2':
+            net.train()
+
         from sklearn import metrics
         predictions = []
         labels = []
         with torch.no_grad():
-            if True:
-                for k, testset_partial in enumerate(testloader):
-                    if k <1000:
-                        testset_partial_I , testset_partial_labels = testset_partial[0].to(device), testset_partial[1].to(device)
-                        predictions += [p.item() for p in net(testset_partial_I) ]
-                        labels += testset_partial_labels.tolist()
-                    else: break
+            for k, testset_partial in enumerate(testloader):
+                if k <1000:
+                    testset_partial_I , testset_partial_labels = testset_partial[0].to(device), testset_partial[1].to(device)
+                    predictions += [p.item() for p in net(testset_partial_I) ]
+                    labels += testset_partial_labels.tolist()
+                else: break
 
-                auc = metrics.roc_auc_score(labels, predictions)
-                test_auc_list = np.concatenate((train_auc_list, np.array([auc])))
-                if auc < np.max(test_auc_list)-0.04:
-                    break
-                print("Test auc: %5f"%auc)
+            auc = metrics.roc_auc_score(labels, predictions)
+            test_auc_list = np.concatenate((train_auc_list, np.array([auc])))
+            if auc < np.max(test_auc_list)-0.04:
+                break
+            print("Test auc: %5f"%auc)
 
         net.train()
     
