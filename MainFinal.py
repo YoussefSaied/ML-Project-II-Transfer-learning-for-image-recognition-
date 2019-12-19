@@ -136,9 +136,6 @@ else:
     net.classifier = torch.nn.Linear(1280, 1)
 
 
-if not torch.cuda.is_available() : #ie if NOT on the server
-    print(net)
-
 
 from datasetY import init_batchnorm
 
