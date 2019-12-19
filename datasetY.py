@@ -286,6 +286,13 @@ def random_splitY(dataset, lengths):
 
 
 def accuracy(net, loader,device="cpu"):
+    r"""
+    Calculates a net's accuracy for a given testset using its dataloader.
+
+    Arguments:
+        loader (Dataloader): Dataloader for the testset
+        net (pytorch nn): neuralnet used for predictions
+    """
     correct = 0.0
     total = 0.0
     with torch.no_grad():
@@ -352,8 +359,7 @@ def MakingDatasets(datapath,transfer_learning, PathDataset,data_augmentation,bat
             testset.transform=transform
             print("Loading datasets...")
     else: 
-        import datasetY as dataset
-        full_dataset = dataset.GG2(datapath,data_augmentation=False,transform=transform)
+        full_dataset = GG2(datapath,data_augmentation=False,transform=transform)
 
         # To split the full_dataset
         train_size = int(proportion_traindata * len(full_dataset))
@@ -422,3 +428,196 @@ def init_batchnorm(model):
             setattr(model, child_name, nn.BatchNorm2d(num_features=num_features))
         else:
             convert_batch_to_instance(child)
+
+def output(testloader,device,net):
+    r"""
+    Plots ROC, calculates AUROC, outputs all predictions and labels for the testset to a local csv file
+
+    Arguments:
+        testloader : The dataloader for the testset
+    """
+    predictions = []
+    labels = []
+    for k, testset_partial in enumerate(testloader):
+        if k <10000: #change this theshhold to just estimate the auc using a sample of the testing data
+            testset_partial_I , testset_partial_labels = testset_partial[0].to(device), testset_partial[1].to(device)
+            predictions += [p.item() for p in net(testset_partial_I) ]
+            labels += testset_partial_labels.tolist()
+        else: break
+        if k%1000==0 and not k== 0:
+            print(k)
+    from sklearn import metrics
+
+    fpr, tpr, thresholds = metrics.roc_curve(labels, predictions)
+
+    # importing the required module 
+    import matplotlib.pyplot as plt 
+    
+    # x axis and y axis values 
+    x ,y = fpr, tpr
+
+    # plotting the points  
+    plt.plot(x, y,marker='x') 
+    plt.plot(x, x,marker='x')
+    
+    # naming the x axis 
+    plt.xlabel('False Positive Rate') 
+    # naming the y axis 
+    plt.ylabel('True Positive Rate') 
+    
+    # giving a title to my graph 
+    plt.title('Reciever operating characteristic curve') 
+    
+    # function to show the plot 
+    plt.show()
+
+    print("Calculating AUROC...")
+
+    auc = metrics.roc_auc_score(labels, predictions)
+    print("Test AUROC: %5f"%auc)
+
+    print("Outputting predictions and labels for testset...")
+    np.savetxt("PredictionsAndLabels.csv", [predictions,labels], delimiter=",")
+
+def ImportNN(simple, transfer_learning):
+    r"""
+    Imports efficientnet from github
+
+    Arguments:
+        simple (boolean) : Whether to import the simple NN or not
+        transfer_learning (boolena): Whether to freeze first layer or not
+    """
+    if simple:
+        net = torch.hub.load('rwightman/gen-efficientnet-pytorch', 'tf_mobilenetv3_small_minimal_100',
+        pretrained=False)
+
+        # Change First and Last Layer
+        if not transfer_learning:
+            net.conv_stem = torch.nn.Conv2d(4,16,kernel_size=(2,2),bias=False)
+        net.classifier = torch.nn.Linear(1024, 1)
+    else: 
+        net = torch.hub.load('rwightman/gen-efficientnet-pytorch', 'efficientnet_b0',
+        pretrained=True)
+
+        # Change First and Last Layer
+        if not transfer_learning:
+            net.conv_stem = torch.nn.Conv2d(4, 32, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False)
+        net.classifier = torch.nn.Linear(1280, 1)
+    return net
+
+
+def train_load(device, PathModel, net, use_saved_model,save_trained_model, lrv, momentumv,
+ transfer_learning, train_or_not, trainloader, printevery, epochs):
+    r"""
+    Function to load and train a neural net.
+
+    """
+    import torch.optim as optim
+    import torch.nn as nn
+    import torch.nn.functional as F
+    import torch
+
+
+    print("Learning rate= "+str(lrv))
+
+
+    #Option to use a saved model parameters
+    if use_saved_model:
+        import os
+        if os.path.isfile(PathModel):
+            if os.stat(PathModel).st_size > 0:
+                net.load_state_dict(torch.load(PathModel,map_location=torch.device(device)))
+                print("Loading model...")
+            else: 
+                print("Empty file...")
+            print("Using saved model...")
+
+
+    #Training starts
+
+    criterion = nn.SoftMarginLoss()
+
+    if not transfer_learning:
+        optimizer = optim.SGD(net.parameters(), lr=lrv, momentum=momentumv)
+    else:
+        optimizer = optim.SGD(net.classifier.parameters(), lr=lrv, momentum=momentumv)
+        for param in net.parameters():
+            param.requires_grad = False
+        for param in net.classifier.parameters():
+            param.requires_grad = True
+        
+        
+    # Decay LR by a factor of 0.1 every 7 epochs
+    from torch.optim import lr_scheduler
+    exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
+
+    net.train()
+
+    if train_or_not:
+        print("Starting training...")
+        train_auc_list = np.array([0])
+        test_auc_list = []
+        for epoch in range(epochs):  # loop over the dataset multiple times
+            exp_lr_scheduler.step()
+            print("Starting epoch %d"%(epoch+1))
+            print("Learning rate= "+str(lrv))
+            running_loss = 0.0
+            for i, data in enumerate(trainloader, 0):
+                # get the inputs; data is a list of [inputs, labels]
+                inputs, labels = data[0].to(device), data[1].to(device)
+                labels = torch.unsqueeze(labels, dim =1)
+                labels = labels.float()
+                
+                # zero the parameter gradients
+                optimizer.zero_grad()
+
+                # forward + backward + optimize
+                outputs = net(inputs)
+                loss = criterion(outputs, labels)
+                loss.backward()
+                optimizer.step()
+
+                # print statistics
+                running_loss += loss.item()
+                if i % printevery == printevery-1:    # print every n mini-batches
+                    print('[%5d, %5d] loss: %.6f ' %
+                            (epoch+1, i + 1, running_loss/printevery) )
+                    running_loss = 0.0
+            
+            # save predictions and labels for ROC curve calculation
+            print("Calculating AUROC...")
+
+            # AUC for ROC curve, stop if test AUROC decreases significantly   
+            if use_saved_model == 'Model1':      
+                net.eval()
+            elif use_saved_model == 'Model2':
+                net.train()
+
+            from sklearn import metrics
+            predictions = []
+            labels = []
+            with torch.no_grad():
+                for k, testset_partial in enumerate(testloader):
+                    if k <100000:
+                        testset_partial_I , testset_partial_labels = testset_partial[0].to(device), testset_partial[1].to(device)
+                        predictions += [p.item() for p in net(testset_partial_I) ]
+                        labels += testset_partial_labels.tolist()
+                    else: break
+
+                auc = metrics.roc_auc_score(labels, predictions)
+                test_auc_list = np.concatenate((train_auc_list, np.array([auc])))
+                if auc < np.max(test_auc_list)-0.04:
+                    break
+                print("Test auc: %5f"%auc)
+
+            net.train()
+        
+        print('Finished Training')
+        if save_trained_model:
+            import os
+            if os.path.exists(PathModel):  # checking if there is a file with this name
+                os.remove(PathModel)  # deleting the file
+            torch.save(net.state_dict(), PathModel)
+            print("Saving model...")
+    return net
+        

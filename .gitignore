@@ -4,3 +4,13 @@ __pycache__/
 *.pyc
 
 Predictions/
+
+Figure_1.png
+
+PredictionsAndLabels.csv
+
+PredictionsAndLabelsModel1
+
+submission.zip
+
+submission/

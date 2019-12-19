@@ -11,11 +11,6 @@ YoussefServerPathModel= '/home/saied/ML/ML2/youssefServer22.modeldict' # Path of
 #Server 10 is SIMPLE is init(Batchnorm), not balanced, 8 auc=0.65/0.7 after 5/15 epochs (redo)
 #Server 11 is init(Batchnorm), not balanced, 8 auc= 0.72 after 1 epochs
 #Server 12 is Data augmented, init(Batchnorm), balanced, 8,  weightdecay =0.0001 auc=0.825/?? after 10/?? epochs (best) (redo decrease weight decay) (increase lr) (parallelization)
-#Server 16 is Data augmented, init(Batchnorm), balanced, 8,  weightdecay =0 auc=??/?? after ??/?? epochs 
-#Server 13 is Data augmented, init(Batchnorm), balanced, 128 auc=??/?? after ??/?? epochs (best?)
-#Server 14 is Data augmented, SIMPLE, init(Batchnorm), balanced, 128 auc=??/?? after ??/?? epochs
-#Server 15 is Data augmented, SIMPLE, init(Batchnorm), balanced, 8 auc=??/?? after ??/?? epochs
-#Server 20 is TRANSFERLEARNING, init(Batchnorm), balanced, 128, auc=??/?? after ??/?? epochs
 YoussefServerdatapath = '/data/mgeiger/gg2/data' # Path of data
 YoussefServerPicklingPath = '/home/saied/ML/ML2/' # Path for pickling 
 YoussefPicklingPath = '/home/youssef/EPFL/MA1/Machine learning/MLProject2/ML2/Predictions/' # Path for pickling 
