@@ -8,6 +8,8 @@ YoussefServerdatapath = '/data/mgeiger/gg2/data' # Path of data
 YoussefPathDataset= '/home/youssef/EPFL/MA1/Machine learning/MLProject2/traintestsets.pckl' # Path of training and test dataset
 YoussefServerPathDataset= '/home/saied/ML/ML2/traintestsets.pckl' # Path of training and test dataset
 
+import torch
+
 import os 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
@@ -94,14 +96,13 @@ train_batch_size=args.tbs
 
 
 # PLEASE INSERT YOUR PATH HERE
-PathModel= dir_path+'/'+use_saved_model
+PathModel= dir_path+'/'+use_saved_model +'.modeldict'
 PathDataset = dir_path +'/traintestsets.pckl'
 datapath = dir_path+'/Data' #YoussefServerdatapath
 
 
 # %% Import Dataset and create trainloader 
 import datasetY as dataset
-import torch
 import importlib
 from datasetY import BalancedBatchSampler, BalancedBatchSampler2, random_splitY, accuracy, load_GG2_imagesTransfer, load_GG2_images2
 import itertools
