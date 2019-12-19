@@ -324,7 +324,7 @@ def flip_on_diagonal_that_goes_up(tensor):
 
 #----------------------Functions for main-----------------------
 
-def MakingDatasets(datapath=datapath,transfer_learning, PathDataset,data_augmentation,batch_sizev,test_batch_size,proportion_traindata):
+def MakingDatasets(datapath,transfer_learning, PathDataset,data_augmentation,batch_sizev,test_batch_size,proportion_traindata):
     r"""
     Imports test and training datasets and downloads and creates them if necessary.
     Arguments:
