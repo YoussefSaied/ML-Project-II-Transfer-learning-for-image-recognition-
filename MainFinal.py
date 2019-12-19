@@ -113,7 +113,7 @@ import numpy as np
 # Pickling datasets
 
 from datasetY import MakingDatasets
-trainloader, testloader, ROCloader = MakingDatasets(transfer_learning=transfer_learning, PathDataset=PathDataset
+trainloader, testloader, ROCloader = MakingDatasets(datapath= datapath,transfer_learning=transfer_learning, PathDataset=PathDataset
                                             ,data_augmentation=data_augmentation,batch_sizev=args.tbs,test_batch_size=8,
                                              proportion_traindata=proportion_traindata)
 # %% Import Neural network
